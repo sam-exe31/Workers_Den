@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../theme/ThemeContext'; // Adjust path if needed
+import { useTheme } from '../../theme/ThemeContext'; 
 import { ArrowRight, Menu, X, Wrench, GitCommit, Users2,BookOpen } from 'lucide-react';
 import Logo from './Logo';
 
@@ -18,6 +18,17 @@ export default function LandingNavbar() {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
+  }, []);
+
+  useEffect(() => {
+    const target = sessionStorage.getItem('scrollTarget');
+    if (target && window.location.pathname === '/') {
+      sessionStorage.removeItem('scrollTarget');
+      requestAnimationFrame(() => {
+        const el = document.getElementById(target);
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      });
+    }
   }, []);
 
   const getDirection = (e, elem) => {
@@ -56,12 +67,33 @@ export default function LandingNavbar() {
   };
 
   const navLinks = [
-    { label: 'SERVICES', href: '#services', code: '01', Icon: Wrench },
-    { label: 'WORKFLOW', href: '#workflow', code: '02', Icon: GitCommit },
-    { label: 'ROLES', href: '#team', code: '03', Icon: Users2 },
-    { label: 'About', href: '', code: '04', Icon: BookOpen },
+    { label: 'SERVICES', href: '/#services', code: '01', Icon: Wrench },
+    { label: 'WORKFLOW', href: '/#workflow', code: '02', Icon: GitCommit },
+    { label: 'ROLES', href: '/#team', code: '03', Icon: Users2 },
+    { label: 'About US', href: '/AboutUs', code: '04', Icon: BookOpen },
 
   ];
+
+  const handleNavClick = (e, href) => {
+    const hashIndex = href.indexOf('#');
+
+    if (hashIndex === -1) {
+      setMobileMenuOpen(false);
+      return;
+    }
+
+    const hash = href.slice(hashIndex + 1);
+    e.preventDefault();
+    setMobileMenuOpen(false);
+
+    if (window.location.pathname === '/') {
+      const el = document.getElementById(hash);
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      sessionStorage.setItem('scrollTarget', hash);
+      navigate('/');
+    }
+  };
 
   return (
     <header
@@ -101,7 +133,7 @@ export default function LandingNavbar() {
               style={{
                 borderColor: t.border,
                 color: t.text,
-                background: mode === 'light' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(23, 29, 42, 0.6)',
+                background: mode === 'light' ? 'rgba(251, 250, 252, 0.6)' : 'rgba(23, 29, 42, 0.6)',
               }}
               onMouseEnter={(e) => {
                 e.currentTarget.style.borderColor = t.accent;
@@ -110,7 +142,7 @@ export default function LandingNavbar() {
               }}
               onMouseLeave={(e) => {
                 e.currentTarget.style.borderColor = t.border;
-                e.currentTarget.style.background = mode === 'light' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(23, 29, 42, 0.6)';
+                e.currentTarget.style.background = mode === 'light' ? 'rgba(251, 250, 252, 0.6)' : 'rgba(23, 29, 42, 0.6)';
                 e.currentTarget.style.color = t.text;
               }}
             >
@@ -132,7 +164,7 @@ export default function LandingNavbar() {
             className="wd-mono flex items-center gap-2 px-2.5 py-1.5 text-[11px] font-bold border cursor-pointer transition-colors"
             style={{
               borderColor: t.border,
-              background: mode === 'light' ? '#FFFFFF' : '#171D2A',
+              background: mode === 'light' ? '#FBFAFC' : '#171D2A',
               color: t.text,
             }}
             title="Toggle Theme"
@@ -235,7 +267,7 @@ export default function LandingNavbar() {
                     })}
                     onMouseLeave={(e) => Object.assign(e.currentTarget.style, {
                       borderColor: t.border,
-                      background: mode === 'light' ? 'rgba(255, 255, 255, 0.6)' : 'rgba(23, 29, 42, 0.6)',
+                      background: mode === 'light' ? 'rgba(251, 250, 252, 0.6)' : 'rgba(23, 29, 42, 0.6)',
                       color: t.text
                     })}
                 className="py-2.5 px-3 border font-semibold flex items-center justify-between"

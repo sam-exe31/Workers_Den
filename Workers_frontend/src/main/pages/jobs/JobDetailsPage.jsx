@@ -1,16 +1,22 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
+import { useTheme } from '../../../theme/ThemeContext';
 import api from '../../../api/axiosClient';
-import { THEME } from '../../../theme/tokens';
+import CustomerNavbar from '../Customer/CustomerNavbar';
+import WorkerNavbar from '../Worker/WorkerNavbar';
+import { ReviewForm } from '../../Component/Reviews';
+import { MapPin, Calendar, Phone, ArrowLeft, CheckCircle2 } from 'lucide-react';
 
-export default function JobDetailsPage({ mode = 'light' }) {
+export default function JobDetailsPage() {
   const { id } = useParams();
   const navigate = useNavigate();
-  const t = THEME[mode];
+  const { mode, theme: t } = useTheme();
 
   const [job, setJob] = useState(null);
   const [error, setError] = useState('');
   const [acting, setActing] = useState(false);
+  const [existingReview, setExistingReview] = useState(null);
+  const [reviewSubmitted, setReviewSubmitted] = useState(null);
 
   const token = localStorage.getItem('token');
   let userRole = null;
@@ -23,9 +29,22 @@ export default function JobDetailsPage({ mode = 'light' }) {
     }
   }
 
+  const isWorker = userRole === 'WORKER';
+  const isCustomer = userRole === 'CUSTOMER';
+
   const fetchJob = useCallback(() => {
     api.get(`/jobs/${id}`)
-      .then((res) => setJob(res.data))
+      .then((res) => {
+        setJob(res.data);
+        if (res.data.status === 'COMPLETED' && res.data.workerId) {
+          api.get(`/reviews/worker/${res.data.workerId}`)
+            .then((r) => {
+              const found = (r.data || []).find((rv) => rv.requestId === res.data.requestId);
+              setExistingReview(found || null);
+            })
+            .catch(() => {});
+        }
+      })
       .catch(() => setError('Could not locate work order record.'));
   }, [id]);
 
@@ -40,7 +59,7 @@ export default function JobDetailsPage({ mode = 'light' }) {
       await api.post(`/jobs/${id}/${actionPath}`);
       fetchJob();
     } catch (err) {
-      setError(err.response?.data?.message || `Failed to transition job status.`);
+      setError(err.response?.data?.message || 'Failed to update this work order.');
     } finally {
       setActing(false);
     }
@@ -48,227 +67,154 @@ export default function JobDetailsPage({ mode = 'light' }) {
 
   if (!job) {
     return (
-      <div style={{ padding: 40, textAlign: 'center' }} className="wd-mono">
+      <div style={{ background: t.bg, color: t.muted }} className="min-h-screen flex items-center justify-center wd-mono text-xs">
         {error || 'READING WORK ORDER DATA...'}
       </div>
     );
   }
 
-  const isWorker = userRole === 'WORKER';
-  const isCustomer = userRole === 'CUSTOMER';
+  const statusColors = {
+    OPEN: { border: t.accent, color: t.accent, bg: t.accentSoft },
+    ACCEPTED: { border: '#F59E0B', color: '#D97706', bg: mode === 'light' ? '#FEF3C7' : '#451A03' },
+    IN_PROGRESS: { border: '#F59E0B', color: '#D97706', bg: mode === 'light' ? '#FEF3C7' : '#451A03' },
+    COMPLETED: { border: '#10B981', color: '#10B981', bg: mode === 'light' ? '#DCFCE7' : '#064E3B' },
+    CANCELLED: { border: t.border, color: t.muted, bg: t.cardHover },
+  };
+  const statusStyle = statusColors[job.status] || statusColors.CANCELLED;
 
   return (
-    <div style={{ maxWidth: 760, margin: '0 auto', padding: '32px 20px' }}>
-      {/* Physical Sheet Container */}
-      <div
-        style={{
-          border: `1px solid ${t.border}`,
-          background: mode === 'light' ? '#EAE8E2' : t.surface,
-          padding: '24px 28px',
-        }}
-      >
-        {/* Top Identification Bar */}
-        <div
-          style={{
-            borderBottom: `1px solid ${t.border}`,
-            paddingBottom: 12,
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'baseline',
-          }}
+    <div style={{ background: t.bg, color: t.text }} className="min-h-screen flex flex-col font-sans transition-colors duration-150">
+      {isWorker ? <WorkerNavbar /> : <CustomerNavbar />}
+
+      <main className="flex-1 max-w-3xl w-full mx-auto px-4 sm:px-8 py-8 space-y-5">
+        <button
+          type="button"
+          onClick={() => navigate(-1)}
+          className="wd-mono text-xs font-bold flex items-center gap-1.5 cursor-pointer hover:opacity-70"
+          style={{ color: t.muted }}
         >
-          <div className="wd-mono" style={{ fontSize: 11, color: t.accent }}>
-            WORK ORDER #{job.requestId} // {job.categoryName?.toUpperCase()}
+          <ArrowLeft size={14} /> BACK
+        </button>
+
+        <div className="border p-6 sm:p-8" style={{ background: t.surface, borderColor: t.border }}>
+          <div className="flex items-center justify-between border-b pb-4" style={{ borderColor: t.border }}>
+            <span className="wd-mono text-xs font-bold" style={{ color: t.accent }}>
+              WORK ORDER #{job.requestId} // {job.categoryName?.toUpperCase()}
+            </span>
+            <span className="wd-mono text-xs font-bold px-2.5 py-1 border" style={{ borderColor: statusStyle.border, color: statusStyle.color, background: statusStyle.bg }}>
+              {job.status}
+            </span>
           </div>
-          <div
-            className="wd-mono"
-            style={{
-              fontSize: 11,
-              fontWeight: 600,
-              padding: '2px 6px',
-              border: `1px solid ${t.border}`,
-            }}
-          >
-            STATUS: {job.status}
+
+          <h1 className="wd-display font-black text-2xl uppercase tracking-tight mt-5" style={{ color: t.text }}>
+            {job.title}
+          </h1>
+          <p className="text-sm leading-relaxed mt-2" style={{ color: t.muted }}>
+            {job.description || 'No additional scope of work specified.'}
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6 pt-5 border-t wd-mono text-xs" style={{ borderColor: t.border }}>
+            <div className="flex items-start gap-2">
+              <MapPin size={14} className="mt-0.5 shrink-0" style={{ color: t.accent }} />
+              <div>
+                <div style={{ color: t.muted }}>SERVICE LOCATION</div>
+                <div className="font-semibold mt-0.5" style={{ color: t.text }}>{job.locality}, {job.address}</div>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-2">
+              <Calendar size={14} className="mt-0.5 shrink-0" style={{ color: t.accent }} />
+              <div>
+                <div style={{ color: t.muted }}>DISPATCH SCHEDULE</div>
+                <div className="font-semibold mt-0.5" style={{ color: t.text }}>{job.preferredDate} {job.preferredTime ? `· ${job.preferredTime}` : ''}</div>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-2">
+              <span className="w-3.5 h-3.5 mt-0.5 shrink-0 flex items-center justify-center font-bold" style={{ color: t.accent }}>₹</span>
+              <div>
+                <div style={{ color: t.muted }}>{isWorker ? 'WORKER PAYOUT' : 'STANDARD PRICE'}</div>
+                <div className="font-bold mt-0.5" style={{ color: t.accent }}>₹{isWorker ? job.workerPayout : job.customerPrice}</div>
+              </div>
+            </div>
+
+            <div className="flex items-start gap-2">
+              <Phone size={14} className="mt-0.5 shrink-0" style={{ color: t.accent }} />
+              <div>
+                <div style={{ color: t.muted }}>{isWorker ? 'POSTED BY' : 'ASSIGNED OPERATOR'}</div>
+                <div className="font-semibold mt-0.5" style={{ color: t.text }}>
+                  {isWorker
+                    ? `${job.customerName} (${job.customerPhone || 'N/A'})`
+                    : (job.workerName ? `${job.workerName} (${job.workerPhone || 'N/A'})` : 'Unassigned — awaiting claim')}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {error && (
+            <div className="mt-5 p-3 text-xs wd-mono border" style={{
+              background: mode === 'light' ? '#FEE2E2' : '#3B1818',
+              borderColor: mode === 'light' ? '#F87171' : '#7F2323',
+              color: mode === 'light' ? '#B91C1C' : '#FCA5A5',
+            }}>
+              {error}
+            </div>
+          )}
+
+          <div className="flex flex-wrap gap-2.5 mt-6 pt-5 border-t" style={{ borderColor: t.border }}>
+            {isWorker && job.status === 'OPEN' && (
+              <button type="button" disabled={acting} onClick={() => handleAction('accept')}
+                className="wd-mono text-xs font-bold px-6 py-3 cursor-pointer disabled:opacity-50"
+                style={{ background: t.accent, color: t.accentText, border: 'none' }}>
+                {acting ? 'CLAIMING...' : 'ACCEPT WORK ORDER'}
+              </button>
+            )}
+
+            {isWorker && job.status === 'ACCEPTED' && (
+              <button type="button" disabled={acting} onClick={() => handleAction('start')}
+                className="wd-mono text-xs font-bold px-6 py-3 cursor-pointer disabled:opacity-50"
+                style={{ background: t.accent, color: t.accentText, border: 'none' }}>
+                {acting ? 'UPDATING...' : 'START JOB'}
+              </button>
+            )}
+
+            {isWorker && job.status === 'IN_PROGRESS' && (
+              <button type="button" disabled={acting} onClick={() => handleAction('complete')}
+                className="wd-mono text-xs font-bold px-6 py-3 cursor-pointer disabled:opacity-50 text-white"
+                style={{ background: '#10B981', border: 'none' }}>
+                {acting ? 'CLOSING OUT...' : 'MARK COMPLETED'}
+              </button>
+            )}
+
+            {job.status !== 'COMPLETED' && job.status !== 'CANCELLED' && (
+              <button type="button" disabled={acting} onClick={() => handleAction('cancel')}
+                className="wd-mono text-xs font-bold px-5 py-3 border cursor-pointer disabled:opacity-50"
+                style={{ borderColor: t.border, color: t.muted, background: 'transparent' }}>
+                CANCEL ORDER
+              </button>
+            )}
           </div>
         </div>
 
-        {/* Title & Description */}
-        <h1
-          className="wd-display"
-          style={{ fontSize: 22, fontWeight: 800, margin: '16px 0 8px' }}
-        >
-          {job.title}
-        </h1>
+        {isCustomer && job.status === 'COMPLETED' && (
+          <div className="space-y-3">
+            <h2 className="wd-display font-black text-lg uppercase tracking-tight" style={{ color: t.text }}>
+              Rate This Job
+            </h2>
 
-        <p style={{ fontSize: 14, lineHeight: 1.6, color: t.text, margin: '0 0 20px' }}>
-          {job.description || 'No additional scope of work specified.'}
-        </p>
-
-        {/* Perforated Stub Line */}
-        <div style={{ borderTop: `1px dashed ${t.border}`, margin: '20px 0' }} />
-
-        {/* Field Specs Grid */}
-        <div
-          style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))',
-            gap: 16,
-            marginBottom: 24,
-          }}
-          className="wd-mono"
-        >
-          <div>
-            <div style={{ fontSize: 10, color: t.muted }}>SERVICE LOCATION</div>
-            <div style={{ fontSize: 12, fontWeight: 600, marginTop: 2 }}>
-              {job.locality}, {job.address}
-            </div>
-          </div>
-
-          <div>
-            <div style={{ fontSize: 10, color: t.muted }}>DISPATCH SCHEDULE</div>
-            <div style={{ fontSize: 12, fontWeight: 600, marginTop: 2 }}>
-              {job.preferredDate} {job.preferredTime ? `· ${job.preferredTime}` : ''}
-            </div>
-          </div>
-
-          <div>
-            <div style={{ fontSize: 10, color: t.muted }}>
-              {isWorker ? 'WORKER PAYOUT' : 'STANDARD PRICE'}
-            </div>
-            <div style={{ fontSize: 13, fontWeight: 600, marginTop: 2, color: t.accent }}>
-              ₹{isWorker ? job.workerPayout : job.customerPrice}
-            </div>
-          </div>
-
-          <div>
-            <div style={{ fontSize: 10, color: t.muted }}>
-              {isWorker ? 'POSTED BY' : 'ASSIGNED OPERATOR'}
-            </div>
-            <div style={{ fontSize: 12, fontWeight: 600, marginTop: 2 }}>
-              {isWorker
-                ? `${job.customerName} (TEL: ${job.customerPhone || 'N/A'})`
-                : (job.workerName ? `${job.workerName} (TEL: ${job.workerPhone || 'N/A'})` : 'UNASSIGNED')}
-            </div>
-          </div>
-        </div>
-
-        {/* Specific Blunt Error Banner */}
-        {error && (
-          <div
-            className="wd-mono"
-            style={{
-              padding: '10px 14px',
-              background: mode === 'light' ? '#D6CECE' : '#331B1B',
-              border: '1px solid #994D4D',
-              color: mode === 'light' ? '#801A1A' : '#FF9999',
-              fontSize: 12,
-              marginBottom: 16,
-            }}
-          >
-            {error}
+            {reviewSubmitted || existingReview ? (
+              <div className="border p-5 flex items-center gap-3" style={{ background: t.surface, borderColor: t.border }}>
+                <CheckCircle2 size={18} style={{ color: t.success }} />
+                <span className="text-xs wd-mono" style={{ color: t.muted }}>
+                  You already reviewed this job. Thanks for the feedback.
+                </span>
+              </div>
+            ) : (
+              <ReviewForm requestId={job.requestId} onSubmitted={(data) => setReviewSubmitted(data)} />
+            )}
           </div>
         )}
-
-        {/* Execution Actions — Locked to Single Primary Action per Step */}
-        <div style={{ display: 'flex', gap: 10, flexWrap: 'wrap', borderTop: `1px solid ${t.border}`, paddingTop: 16 }}>
-          {isWorker && job.status === 'OPEN' && (
-            <button
-              type="button"
-              disabled={acting}
-              onClick={() => handleAction('accept')}
-              className="wd-btn wd-mono"
-              style={{
-                background: t.accent,
-                color: t.accentText,
-                border: 'none',
-                padding: '12px 24px',
-                fontSize: 12,
-                fontWeight: 600,
-                cursor: 'pointer',
-              }}
-            >
-              {acting ? 'CLAIMING RECORD...' : 'ACCEPT WORK ORDER'}
-            </button>
-          )}
-
-          {isWorker && job.status === 'ACCEPTED' && (
-            <button
-              type="button"
-              disabled={acting}
-              onClick={() => handleAction('start')}
-              className="wd-btn wd-mono"
-              style={{
-                background: t.accent,
-                color: t.accentText,
-                border: 'none',
-                padding: '12px 24px',
-                fontSize: 12,
-                fontWeight: 600,
-                cursor: 'pointer',
-              }}
-            >
-              {acting ? 'UPDATING...' : 'START JOB'}
-            </button>
-          )}
-
-          {isWorker && job.status === 'IN_PROGRESS' && (
-            <button
-              type="button"
-              disabled={acting}
-              onClick={() => handleAction('complete')}
-              className="wd-btn wd-mono"
-              style={{
-                background: t.accent,
-                color: t.accentText,
-                border: 'none',
-                padding: '12px 24px',
-                fontSize: 12,
-                fontWeight: 600,
-                cursor: 'pointer',
-              }}
-            >
-              {acting ? 'CLOSING OUT...' : 'MARK COMPLETED'}
-            </button>
-          )}
-
-          {job.status !== 'COMPLETED' && job.status !== 'CANCELLED' && (
-            <button
-              type="button"
-              disabled={acting}
-              onClick={() => handleAction('cancel')}
-              className="wd-btn wd-mono"
-              style={{
-                background: 'transparent',
-                border: `1px solid ${t.border}`,
-                color: t.muted,
-                padding: '12px 18px',
-                fontSize: 12,
-                cursor: 'pointer',
-              }}
-            >
-              CANCEL ORDER
-            </button>
-          )}
-
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="wd-btn wd-mono"
-            style={{
-              background: 'transparent',
-              border: `1px solid ${t.border}`,
-              color: t.text,
-              padding: '12px 18px',
-              fontSize: 12,
-              marginLeft: 'auto',
-              cursor: 'pointer',
-            }}
-          >
-            ← BACK TO DISPATCH
-          </button>
-        </div>
-      </div>
+      </main>
     </div>
   );
 }

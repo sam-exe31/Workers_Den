@@ -96,7 +96,7 @@ export default function WorkerNavbar() {
             className="wd-mono flex items-center gap-2 px-2.5 py-1.5 text-[11px] font-bold border cursor-pointer transition-colors"
             style={{
               borderColor: t.border,
-              background: mode === 'light' ? '#FFFFFF' : '#171D2A',
+              background: mode === 'light' ? '#FBFAFC' : '#171D2A',
               color: t.text,
             }}
             title="Toggle theme"

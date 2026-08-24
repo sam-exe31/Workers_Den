@@ -13,7 +13,11 @@ export default function ProtectedRoute({ children, allowedRoles }) {
   const normalizedRole = user.role ? user.role.replace('ROLE_', '') : null;
 
   if (allowedRoles && !allowedRoles.includes(normalizedRole)) {
-    const fallbackPath = normalizedRole === 'WORKER' ? '/worker/dashboard' : '/customer/dashboard';
+    const fallbackPath = normalizedRole === 'WORKER'
+      ? '/worker/dashboard'
+      : normalizedRole === 'ADMIN'
+        ? '/admin/categories'
+        : '/customer/dashboard';
     return <Navigate to={fallbackPath} replace />;
   }
 

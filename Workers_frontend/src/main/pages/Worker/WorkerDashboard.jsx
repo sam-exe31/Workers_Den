@@ -140,7 +140,7 @@ export default function WorkerDashboard() {
               🔥 {availableJobs.length} Work Orders Available Near You
             </h2>
             <p className="text-xs wd-mono" style={{ color: t.muted }}>
-              Matching trade skills in {profile?.locality || 'your assigned area'}[cite: 1]. Direct claim with guaranteed payout[cite: 1].
+              Matching trade skills in {profile?.locality || 'your assigned area'}. Direct claim with guaranteed payout.
             </p>
           </div>
 
@@ -251,7 +251,7 @@ export default function WorkerDashboard() {
               className="p-8 border text-center wd-mono text-xs"
               style={{ background: t.surface, borderColor: t.border, color: t.muted }}
             >
-              No active tasks claimed. Check the sector feed above to accept open jobs[cite: 1].
+              No active tasks claimed. Check the sector feed above to accept open jobs.
             </div>
           )}
         </section>

@@ -1,11 +1,6 @@
-import Browse from "./pages/Browse";
-import Dashboard from "./pages/Dashboard";
-import Home from "./pages/Home";
-import Login from "./pages/Login";
-import Signup from "./pages/Signup";
-
-import Footer from "./Component/Footer";
-import Navbar from "./Component/Navbar";
-
-
-export {Browse,Dashboard,Home,Login,Signup,Footer,Navbar}
+export { default as Home } from './pages/Home';
+export { default as Login } from './pages/Login';
+export { default as Register } from './pages/Register';
+export { default as Browse } from './pages/Browse';
+export { default as Footer } from './Component/Footer';
+export { default as LandingNavbar } from './Component/LandingNavbar';
