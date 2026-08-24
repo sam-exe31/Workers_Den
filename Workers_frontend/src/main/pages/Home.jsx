@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../theme/ThemeContext'; 
+import { useTheme } from '../../theme/ThemeContext'; // Adjust path if needed
 import api from '../../api/axiosClient';
 import { ArrowRight, ShieldCheck, Zap, Layers, Users, Wrench } from 'lucide-react';
 
@@ -160,7 +160,7 @@ export default function Home() {
             {displayCategories.map((cat) => (
               <div
                 key={cat.name}
-                onClick={() => navigate('/browse')}
+                onClick={() => navigate('/register')}
                 className="group relative border overflow-hidden cursor-pointer flex flex-col justify-end transition-all duration-200 hover:-translate-y-1"
                 style={{
                   background: t.surface,

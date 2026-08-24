@@ -52,7 +52,7 @@ function AppLayout() {
           <Route path="/" element={<Home />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-          <Route path="/AboutUs" element={<AboutUs/>} />
+          <Route path="/about" element={<AboutUs />} />
 
           {/* ─── 2. Customer-Protected Routes ─── */}
           <Route element={<ProtectedRoute allowedRoles={['CUSTOMER']} />}>

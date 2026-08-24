@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../theme/ThemeContext'; 
+import { useTheme } from '../../theme/ThemeContext'; // Adjust path if needed
 import { ArrowRight, Menu, X, Wrench, GitCommit, Users2,BookOpen } from 'lucide-react';
 import Logo from './Logo';
 
@@ -18,17 +18,6 @@ export default function LandingNavbar() {
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, []);
-
-  useEffect(() => {
-    const target = sessionStorage.getItem('scrollTarget');
-    if (target && window.location.pathname === '/') {
-      sessionStorage.removeItem('scrollTarget');
-      requestAnimationFrame(() => {
-        const el = document.getElementById(target);
-        if (el) el.scrollIntoView({ behavior: 'smooth' });
-      });
-    }
   }, []);
 
   const getDirection = (e, elem) => {
@@ -67,33 +56,12 @@ export default function LandingNavbar() {
   };
 
   const navLinks = [
-    { label: 'SERVICES', href: '/#services', code: '01', Icon: Wrench },
-    { label: 'WORKFLOW', href: '/#workflow', code: '02', Icon: GitCommit },
-    { label: 'ROLES', href: '/#team', code: '03', Icon: Users2 },
-    { label: 'About US', href: '/AboutUs', code: '04', Icon: BookOpen },
+    { label: 'SERVICES', href: '#services', code: '01', Icon: Wrench },
+    { label: 'WORKFLOW', href: '#workflow', code: '02', Icon: GitCommit },
+    { label: 'ROLES', href: '#team', code: '03', Icon: Users2 },
+    { label: 'ABOUT US', href: '/about', code: '04', Icon: BookOpen },
 
   ];
-
-  const handleNavClick = (e, href) => {
-    const hashIndex = href.indexOf('#');
-
-    if (hashIndex === -1) {
-      setMobileMenuOpen(false);
-      return;
-    }
-
-    const hash = href.slice(hashIndex + 1);
-    e.preventDefault();
-    setMobileMenuOpen(false);
-
-    if (window.location.pathname === '/') {
-      const el = document.getElementById(hash);
-      if (el) el.scrollIntoView({ behavior: 'smooth' });
-    } else {
-      sessionStorage.setItem('scrollTarget', hash);
-      navigate('/');
-    }
-  };
 
   return (
     <header

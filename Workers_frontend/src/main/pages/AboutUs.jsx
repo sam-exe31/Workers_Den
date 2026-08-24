@@ -5,30 +5,6 @@ import LandingNavbar from '../Component/LandingNavbar';
 import Footer from '../Component/Footer';
 import { ShieldCheck, Wallet, Clock, Users, ArrowRight, MapPin } from 'lucide-react';
 
-const GithubIcon = ({ size = 16 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
-    <path d="M12 0C5.37 0 0 5.5 0 12.3c0 5.44 3.44 10.05 8.21 11.68.6.11.82-.27.82-.6 0-.29-.01-1.06-.02-2.08-3.34.75-4.04-1.66-4.04-1.66-.55-1.42-1.34-1.8-1.34-1.8-1.09-.77.08-.75.08-.75 1.21.09 1.84 1.28 1.84 1.28 1.07 1.88 2.81 1.33 3.5 1.02.11-.8.42-1.33.76-1.64-2.67-.31-5.47-1.38-5.47-6.15 0-1.36.47-2.47 1.24-3.34-.12-.31-.54-1.57.12-3.28 0 0 1.01-.33 3.3 1.28.96-.27 1.98-.41 3-.42 1.02.01 2.04.15 3 .42 2.29-1.6 3.3-1.28 3.3-1.28.66 1.71.24 2.97.12 3.28.77.87 1.24 1.98 1.24 3.34 0 4.78-2.81 5.83-5.49 6.14.43.38.81 1.13.81 2.28 0 1.65-.02 2.98-.02 3.38 0 .33.22.72.83.6C20.57 22.34 24 17.74 24 12.3 24 5.5 18.63 0 12 0z" />
-  </svg>
-);
-
-const LinkedinIcon = ({ size = 16 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
-    <path d="M20.45 20.45h-3.56v-5.57c0-1.33-.02-3.04-1.85-3.04-1.85 0-2.14 1.45-2.14 2.94v5.67H9.34V9h3.42v1.56h.05c.48-.9 1.64-1.85 3.38-1.85 3.61 0 4.28 2.38 4.28 5.48v6.26zM5.34 7.43a2.07 2.07 0 1 1 0-4.13 2.07 2.07 0 0 1 0 4.13zM7.12 20.45H3.56V9h3.56v11.45z" />
-  </svg>
-);
-
-const LeetcodeIcon = ({ size = 16 }) => (
-  <svg width={size} height={size} viewBox="0 0 24 24" fill="currentColor">
-    <path d="M13.48 23.4a3.14 3.14 0 0 1-2.2-.9l-4.53-4.5a3.04 3.04 0 0 1-.65-3.36l2.86-6.9a3.15 3.15 0 0 1 1.94-1.79l6.98-2.27a3.16 3.16 0 0 1 3.36.83l1.6 1.75a1.6 1.6 0 0 1-2.36 2.16l-1.6-1.75a.35.35 0 0 0-.36-.09l-6.98 2.27a.35.35 0 0 0-.21.2l-2.86 6.9c-.05.13-.02.28.08.38l4.53 4.5c.1.1.25.13.38.08l6.85-2.32a.35.35 0 0 0 .2-.2l.9-2.16a1.6 1.6 0 0 1 2.96 1.22l-.9 2.16a3.15 3.15 0 0 1-1.95 1.8l-6.85 2.32c-.36.12-.73.18-1.09.18z" />
-  </svg>
-);
-
-const SOCIAL_LINKS = [
-  { label: 'GitHub', Icon: GithubIcon, href: '#' },
-  { label: 'LinkedIn', Icon: LinkedinIcon, href: '#' },
-  { label: 'LeetCode', Icon: LeetcodeIcon, href: '#' },
-];
-
 const STATS = [
   { label: 'VERIFIED TECHNICIANS', value: '500+' },
   { label: 'JOBS COMPLETED', value: '12,000+' },
@@ -96,7 +72,15 @@ export default function AboutUs() {
           </div>
         </section>
 
-        
+        <section className="max-w-5xl mx-auto px-4 sm:px-8 py-12 grid grid-cols-2 sm:grid-cols-4 gap-4">
+          {STATS.map((s) => (
+            <div key={s.label} className="border p-5 text-center" style={{ background: t.surface, borderColor: t.border }}>
+              <div className="wd-display font-black text-2xl" style={{ color: t.accent }}>{s.value}</div>
+              <div className="wd-mono text-[10px] font-bold uppercase tracking-wider mt-1" style={{ color: t.muted }}>{s.label}</div>
+            </div>
+          ))}
+        </section>
+
         <section className="max-w-5xl mx-auto px-4 sm:px-8 py-8">
           <div className="max-w-2xl">
             <div className="wd-mono text-[10px] font-bold uppercase tracking-wider" style={{ color: t.accent }}>OUR STORY</div>
@@ -134,54 +118,36 @@ export default function AboutUs() {
           </div>
         </section>
 
-        <section className="max-w-5xl mx-auto px-4 sm:px-8 py-10">
-          <div className="wd-mono text-[10px] font-bold uppercase tracking-wider" style={{ color: t.accent }}>THE BUILDER</div>
-          <h2 className="wd-display font-black text-2xl uppercase tracking-tight mt-1 mb-6" style={{ color: t.text }}>
-            Who's behind this
-          </h2>
-
-          <div className="border p-6 sm:p-8 flex flex-col sm:flex-row items-start gap-6" style={{ background: t.surface, borderColor: t.border }}>
-            <div
-              className="w-16 h-16 border flex items-center justify-center font-black text-xl shrink-0"
-              style={{ borderColor: t.accent, background: t.accentSoft, color: t.accent }}
-            >
-              SG
+        <section className="border-t" style={{ borderColor: t.border, background: t.accentSoft }}>
+          <div className="max-w-5xl mx-auto px-4 sm:px-8 py-14 flex flex-col sm:flex-row items-center justify-between gap-6">
+            <div>
+              <div className="wd-mono text-[10px] font-bold uppercase tracking-wider flex items-center gap-1.5" style={{ color: t.accent }}>
+                <MapPin size={12} /> CURRENTLY LIVE IN PUNE
+              </div>
+              <h2 className="wd-display font-black text-xl sm:text-2xl uppercase tracking-tight mt-1" style={{ color: t.text }}>
+                Ready to get started?
+              </h2>
             </div>
-
-            <div className="flex-1">
-              <div className="flex flex-wrap items-center gap-3">
-                <h3 className="wd-display font-black text-lg uppercase" style={{ color: t.text }}>Samarth Ghate</h3>
-                <span className="wd-mono text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 border" style={{ borderColor: t.border, color: t.muted }}>
-                  Solo Builder
-                </span>
-              </div>
-
-              <p className="text-xs leading-relaxed mt-3 max-w-xl" style={{ color: t.muted }}>
-                Workers Den is a solo-built, end-to-end service marketplace — designed, backed, and shipped from scratch
-                as a major project. It covers full-stack architecture, JWT-based auth, role-based dispatch logic, and a
-                production-style frontend, built to be a proper showcase of real-world engineering, not a tutorial clone.
-              </p>
-
-              <div className="flex items-center gap-3 mt-5">
-                {SOCIAL_LINKS.map(({ label, Icon, href }) => (
-                  <a
-                    key={label}
-                    href={href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    aria-label={label}
-                    className="w-9 h-9 border flex items-center justify-center transition-colors duration-150 hover:opacity-75"
-                    style={{ borderColor: t.border, color: t.text }}
-                  >
-                    <Icon size={16} />
-                  </a>
-                ))}
-              </div>
+            <div className="flex gap-3 shrink-0">
+              <button
+                type="button"
+                onClick={() => navigate('/register')}
+                className="wd-mono wd-btn text-xs font-bold px-6 py-3.5 flex items-center gap-2 cursor-pointer"
+                style={{ background: t.accent, color: t.accentText, border: 'none' }}
+              >
+                BOOK A SERVICE <ArrowRight size={14} />
+              </button>
+              <button
+                type="button"
+                onClick={() => navigate('/register?role=WORKER')}
+                className="wd-mono wd-btn text-xs font-bold px-6 py-3.5 border cursor-pointer"
+                style={{ borderColor: t.border, color: t.text, background: 'transparent' }}
+              >
+                JOIN AS A WORKER
+              </button>
             </div>
           </div>
         </section>
-
-        
       </main>
 
       <Footer />
