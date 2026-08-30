@@ -2,17 +2,17 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import api from '../../api/axiosClient';
 import { Navbar } from '../Component/Navbar';
-import { 
-  Sparkles, 
-  ArrowRight, 
-  ShieldCheck, 
-  Zap, 
-  Layers, 
-  Clock, 
-  MapPin, 
-  Camera, 
-  CheckCircle2, 
-  Briefcase 
+import {
+  Sparkles,
+  ArrowRight,
+  ShieldCheck,
+  Zap,
+  Layers,
+  Clock,
+  MapPin,
+  Camera,
+  CheckCircle2,
+  Briefcase
 } from 'lucide-react';
 
 const STATIC_JOBS = [
@@ -52,17 +52,19 @@ export default function Home() {
   }, []);
 
   const displayJobs = jobs.length > 0 ? jobs : STATIC_JOBS;
+  const [featuredJob, ...restJobs] = displayJobs;
+  const secondaryJobs = restJobs.slice(0, 3);
 
   return (
     <div className="min-h-screen bg-[#0B0B0D] text-[#F7F6F2] flex flex-col font-sans selection:bg-[#F4A340] selection:text-[#0B0B0D]">
       <Navbar />
 
       <main className="flex-1">
-        
+
         {/* HERO SECTION */}
         <section className="w-full pt-12 pb-20 px-6 border-b border-[#27272A]">
           <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
-            
+
             <div className="lg:col-span-7 space-y-7">
               <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#16161A] border border-[#27272A] rounded-full text-xs text-[#F4A340]">
                 <Sparkles size={14} />
@@ -80,11 +82,11 @@ export default function Home() {
 
               <div className="bg-[#16161A] border border-[#27272A] p-4 rounded-[16px] max-w-lg space-y-3">
                 <div className="space-y-1">
-                  <span className="text-[10px] font-mono text-[#A0A0AA] uppercase">WHAT NEEDS TO BE DONE?</span>
-                  <input 
-                    type="text" 
-                    readOnly 
-                    value="My AC isn't cooling..." 
+                  <span className="text-[10px] font-mono text-[#A0A0AA] uppercase">What needs to be done?</span>
+                  <input
+                    type="text"
+                    readOnly
+                    value="My AC isn't cooling..."
                     className="w-full bg-[#0B0B0D] border border-[#27272A] text-[#F7F6F2] px-3.5 py-2.5 rounded-[10px] text-xs focus:outline-none cursor-default"
                   />
                 </div>
@@ -92,9 +94,9 @@ export default function Home() {
                   <span className="text-xs text-[#A0A0AA] flex items-center gap-1">
                     <MapPin size={13} className="text-[#F4A340]" /> Pune (Kothrud, Baner, Wakad & more)
                   </span>
-                  <button 
+                  <button
                     onClick={() => navigate('/register')}
-                    className="bg-[#F4A340] hover:bg-[#E09230] text-[#0B0B0D] font-semibold text-xs px-4 py-2 rounded-[8px] transition-colors"
+                    className="bg-[#F4A340] hover:bg-[#E09230] text-[#0B0B0D] font-semibold text-xs px-4 py-2 rounded-[8px] transition-colors cursor-pointer"
                   >
                     Post a Job →
                   </button>
@@ -107,13 +109,13 @@ export default function Home() {
                 <div className="flex items-center justify-between pb-3 border-b border-[#27272A] text-xs font-mono">
                   <span className="flex items-center gap-2 text-[#F4A340]">
                     <span className="w-2 h-2 rounded-full bg-[#F4A340] animate-ping" />
-                    LIVE JOB POSTED
+                    Live job posted
                   </span>
                   <span className="text-[#57575E]">Just now</span>
                 </div>
 
                 <div className="space-y-3">
-                  <span className="text-[10px] font-mono text-[#A0A0AA] uppercase">AC REPAIR</span>
+                  <span className="text-[10px] font-mono text-[#A0A0AA] uppercase">AC Repair</span>
                   <h3 className="font-semibold text-lg text-[#F7F6F2]">
                     Keeps running but isn't cooling properly.
                   </h3>
@@ -124,16 +126,16 @@ export default function Home() {
                 </div>
 
                 <div className="pt-3 border-t border-[#27272A] flex items-center justify-between text-[10px] font-mono">
-                  <span className="text-[#F7F6F2]">● POSTED</span>
+                  <span className="text-[#F7F6F2]">● Posted</span>
                   <span className="text-[#57575E]">───</span>
-                  <span className="text-[#F4A340]">● 3 PICKED</span>
+                  <span className="text-[#F4A340]">● 3 picked</span>
                   <span className="text-[#57575E]">───</span>
-                  <span className="text-[#57575E]">○ CHOOSE</span>
+                  <span className="text-[#57575E]">○ Choose</span>
                 </div>
 
-                <button 
+                <button
                   onClick={() => navigate('/login')}
-                  className="w-full bg-[#27272A] hover:bg-[#323238] text-[#F7F6F2] text-xs py-2.5 rounded-[8px] font-medium transition-colors"
+                  className="w-full bg-[#27272A] hover:bg-[#323238] text-[#F7F6F2] text-xs py-2.5 rounded-[8px] font-medium transition-colors cursor-pointer"
                 >
                   View Responses →
                 </button>
@@ -147,7 +149,7 @@ export default function Home() {
         <section id="how-it-works" className="w-full py-20 px-6 border-b border-[#27272A]">
           <div className="max-w-7xl mx-auto space-y-12">
             <div className="space-y-2">
-              <span className="text-xs font-mono uppercase text-[#F4A340]">Simple Flow</span>
+              <span className="text-xs font-mono uppercase text-[#F4A340]">Simple flow</span>
               <h2 className="text-3xl font-bold tracking-tight text-[#F7F6F2]">Post. Pick. Choose. Done.</h2>
             </div>
 
@@ -168,7 +170,7 @@ export default function Home() {
                       <h3 className="font-semibold text-lg text-[#F7F6F2]">{step.title}</h3>
                       <p className="text-xs text-[#A0A0AA] leading-relaxed">{step.desc}</p>
                     </div>
-                    <span className="text-[10px] font-mono text-[#57575E]">STEP {step.num}</span>
+                    <span className="text-[10px] font-mono text-[#57575E]">Step {step.num}</span>
                   </div>
                 );
               })}
@@ -176,46 +178,75 @@ export default function Home() {
           </div>
         </section>
 
-        {/* LIVE EXAMPLES */}
+        {/* LIVE EXAMPLES — asymmetric: one featured job + 3 supporting jobs */}
         <section id="services" className="w-full py-20 px-6 border-b border-[#27272A]">
           <div className="max-w-7xl mx-auto space-y-10">
             <div className="flex items-end justify-between">
               <div className="space-y-2">
-                <span className="text-xs font-mono uppercase text-[#F4A340]">Pune Tasks</span>
+                <span className="text-xs font-mono uppercase text-[#F4A340]">Pune tasks</span>
                 <h2 className="text-3xl font-bold tracking-tight text-[#F7F6F2]">What needs doing?</h2>
               </div>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-              {displayJobs.slice(0, 4).map((job, idx) => (
-                <div key={idx} className="bg-[#16161A] border border-[#27272A] p-5 rounded-[14px] flex flex-col justify-between space-y-4 hover:border-[#3E3E44] transition-all">
-                  <div className="space-y-2">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+              {/* Featured job — larger, more detail */}
+              {featuredJob && (
+                <div className="lg:col-span-7 bg-[#16161A] border border-[#27272A] rounded-[16px] p-7 flex flex-col justify-between hover:border-[#3E3E44] transition-all">
+                  <div className="space-y-4">
                     <div className="flex items-center justify-between text-[10px] font-mono text-[#A0A0AA]">
-                      <span className="uppercase font-semibold text-[#F4A340]">{job.name}</span>
-                      <span className="flex items-center gap-1"><Clock size={11} /> {job.timing}</span>
+                      <span className="uppercase font-semibold text-[#F4A340] tracking-wider">{featuredJob.name}</span>
+                      <span className="flex items-center gap-1"><Clock size={11} /> {featuredJob.timing}</span>
                     </div>
-                    <h4 className="font-semibold text-sm text-[#F7F6F2] leading-snug">{job.desc}</h4>
-                  </div>
-
-                  <div className="pt-3 border-t border-[#27272A] flex items-baseline justify-between text-xs text-[#A0A0AA]">
-                    <div className="space-y-1">
-                      <span className="flex items-center gap-1 text-[#F7F6F2]"><MapPin size={12} /> {job.area}</span>
-                      {job.photos > 0 && <span className="flex items-center gap-1 text-[11px]"><Camera size={11} /> {job.photos} photos</span>}
-                    </div>
-                    <div className="text-right">
-                      <span className="text-[9px] font-mono text-[#57575E] block">FIXED</span>
-                      <span className="font-bold text-base text-[#F7F6F2]">₹{job.price}</span>
+                    <h3 className="font-semibold text-2xl text-[#F7F6F2] leading-snug max-w-md">
+                      {featuredJob.desc}
+                    </h3>
+                    <div className="flex items-center gap-4 text-xs text-[#A0A0AA]">
+                      <span className="flex items-center gap-1 text-[#F7F6F2]"><MapPin size={13} /> {featuredJob.area}, Pune</span>
+                      {featuredJob.photos > 0 && (
+                        <span className="flex items-center gap-1"><Camera size={12} /> {featuredJob.photos} photos</span>
+                      )}
+                      <span className="flex items-center gap-1"><ShieldCheck size={12} className="text-[#F4A340]" /> {featuredJob.picked} pros picked</span>
                     </div>
                   </div>
 
-                  <button 
-                    onClick={() => navigate('/register')}
-                    className="w-full bg-[#27272A] hover:bg-[#F4A340] hover:text-[#0B0B0D] text-[#F7F6F2] text-xs py-2 rounded-[8px] font-medium transition-colors"
-                  >
-                    View Responses →
-                  </button>
+                  <div className="pt-6 mt-6 border-t border-[#27272A] flex items-end justify-between">
+                    <div>
+                      <span className="text-[9px] font-mono text-[#57575E] block uppercase">Fixed price</span>
+                      <span className="font-bold text-2xl text-[#F7F6F2]">₹{featuredJob.price}</span>
+                    </div>
+                    <button
+                      onClick={() => navigate('/register')}
+                      className="bg-[#27272A] hover:bg-[#F4A340] hover:text-[#0B0B0D] text-[#F7F6F2] text-xs px-4 py-2.5 rounded-[8px] font-medium transition-colors cursor-pointer"
+                    >
+                      View Responses →
+                    </button>
+                  </div>
                 </div>
-              ))}
+              )}
+
+              {/* Supporting jobs — compact */}
+              <div className="lg:col-span-5 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-6">
+                {secondaryJobs.map((job, idx) => (
+                  <div key={idx} className="bg-[#16161A] border border-[#27272A] p-5 rounded-[14px] flex items-center justify-between gap-4 hover:border-[#3E3E44] transition-all">
+                    <div className="space-y-1.5 min-w-0">
+                      <span className="text-[10px] font-mono uppercase font-semibold text-[#F4A340] tracking-wider">{job.name}</span>
+                      <h4 className="font-medium text-sm text-[#F7F6F2] leading-snug truncate">{job.desc}</h4>
+                      <span className="flex items-center gap-1 text-[11px] text-[#A0A0AA]"><MapPin size={11} /> {job.area}</span>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <span className="font-bold text-base text-[#F7F6F2] block">₹{job.price}</span>
+                      <button
+                        onClick={() => navigate('/register')}
+                        className="text-[10px] text-[#A0A0AA] hover:text-[#F4A340] transition-colors cursor-pointer"
+                      >
+                        View →
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
             </div>
           </div>
         </section>
@@ -224,7 +255,7 @@ export default function Home() {
         <section className="w-full py-20 px-6 border-b border-[#27272A]">
           <div className="max-w-7xl mx-auto space-y-12">
             <div className="space-y-2">
-              <span className="text-xs font-mono uppercase text-[#F4A340]">Platform Standard</span>
+              <span className="text-xs font-mono uppercase text-[#F4A340]">Platform standard</span>
               <h2 className="text-3xl font-bold tracking-tight text-[#F7F6F2]">Why Workers Den</h2>
             </div>
 
@@ -249,16 +280,16 @@ export default function Home() {
         <section id="find-jobs" className="w-full py-20 px-6 border-b border-[#27272A]">
           <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
             <div className="lg:col-span-6 space-y-6">
-              <span className="text-xs font-mono uppercase text-[#F4A340]">For Trade Pros & Students</span>
+              <span className="text-xs font-mono uppercase text-[#F4A340]">For trade pros & students</span>
               <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#F7F6F2]">
                 Got a skill? Get paid for it.
               </h2>
               <p className="text-sm text-[#A0A0AA] leading-relaxed">
                 Claim local jobs matching your schedule, work independently across Pune, and earn direct payouts.
               </p>
-              <button 
+              <button
                 onClick={() => navigate('/register')}
-                className="bg-[#F4A340] hover:bg-[#E09230] text-[#0B0B0D] font-semibold text-xs px-5 py-2.5 rounded-[8px] transition-colors"
+                className="bg-[#F4A340] hover:bg-[#E09230] text-[#0B0B0D] font-semibold text-xs px-5 py-2.5 rounded-[8px] transition-colors cursor-pointer"
               >
                 Find Jobs in Pune →
               </button>
@@ -285,15 +316,15 @@ export default function Home() {
               <span className="text-[#57575E]">Someone can do it.</span>
             </h2>
             <div className="flex justify-center gap-3 pt-2">
-              <button 
+              <button
                 onClick={() => navigate('/register')}
-                className="bg-[#F4A340] hover:bg-[#E09230] text-[#0B0B0D] font-semibold text-xs px-6 py-3 rounded-[8px] transition-colors"
+                className="bg-[#F4A340] hover:bg-[#E09230] text-[#0B0B0D] font-semibold text-xs px-6 py-3 rounded-[8px] transition-colors cursor-pointer"
               >
                 Post a Job
               </button>
-              <button 
+              <button
                 onClick={() => navigate('/register')}
-                className="bg-[#16161A] border border-[#27272A] hover:border-[#F7F6F2] text-[#F7F6F2] font-semibold text-xs px-6 py-3 rounded-[8px] transition-colors"
+                className="bg-[#16161A] border border-[#27272A] hover:border-[#F7F6F2] text-[#F7F6F2] font-semibold text-xs px-6 py-3 rounded-[8px] transition-colors cursor-pointer"
               >
                 Find Jobs
               </button>
