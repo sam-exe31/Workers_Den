@@ -1,347 +1,316 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../theme/ThemeContext'; // Adjust path if needed
 import api from '../../api/axiosClient';
-import { ArrowRight, ShieldCheck, Zap, Layers, Users, Wrench } from 'lucide-react';
+import { Navbar } from '../Component/Navbar';
+import { 
+  Sparkles, 
+  ArrowRight, 
+  ShieldCheck, 
+  Zap, 
+  Layers, 
+  Clock, 
+  MapPin, 
+  Camera, 
+  CheckCircle2, 
+  Briefcase 
+} from 'lucide-react';
 
-const STATIC_CATEGORIES = [
-  { name: 'Plumbing', price: '₹499', code: 'TR-01', image: 'https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=600&auto=format&fit=crop&q=80' },
-  { name: 'Electrical', price: '₹399', code: 'TR-02', image: 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=600&auto=format&fit=crop&q=80' },
-  { name: 'Carpentry', price: '₹599', code: 'TR-03', image: 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=600&auto=format&fit=crop&q=80' },
-  { name: 'Painting', price: '₹799', code: 'TR-04', image: 'https://images.unsplash.com/photo-1589834390005-5d4fb9bf3d32?w=600&auto=format&fit=crop&q=80' },
-  { name: 'Cleaning', price: '₹349', code: 'TR-05', image: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=600&auto=format&fit=crop&q=80' },
-  { name: 'AC Repair', price: '₹449', code: 'TR-06', image: 'https://plus.unsplash.com/premium_photo-1683134512538-7b390d0adc9e?w=1000&auto=format&fit=crop&q=60&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxzZWFyY2h8MXx8YXBwbGlhbmNlJTIwZml4fGVufDB8fDB8fHww' },
-  { name: 'Appliance Fix', price: '₹549', code: 'TR-07', image: 'https://images.unsplash.com/photo-1758101755915-462eddc23f57?q=80&w=1074&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D' },
-  { name: 'General Help', price: '₹299', code: 'TR-08', image: 'https://images.unsplash.com/photo-1604328698692-f76ea9498e76?w=600&auto=format&fit=crop&q=80' },
+const STATIC_JOBS = [
+  { name: 'AC Repair', price: 700, area: 'Kothrud', timing: 'Today', photos: 2, picked: 3, desc: "Keeps running but isn't cooling properly." },
+  { name: 'Home Cleaning', price: 1200, area: 'Baner', timing: 'Tomorrow', photos: 4, picked: 2, desc: '2BHK deep cleaning before moving in.' },
+  { name: 'Catering', price: 8500, area: 'Wakad', timing: 'Saturday', photos: 0, picked: 4, desc: 'Traditional snacks & setup for 40 guests.' },
+  { name: 'Electrical', price: 600, area: 'Hadapsar', timing: 'Today', photos: 1, picked: 2, desc: 'Assemble and install 3 ceiling fans.' },
 ];
 
-const STATS = [
-  { value: '500+', label: 'Jobs Completed' },
-  { value: '120+', label: 'Verified Pros' },
-  { value: '4.8', label: 'Avg. Rating' },
-  { value: '30 Days', label: 'Service Warranty' },
-];
-
-const WORKFLOW = [
-  {
-    step: '01',
-    title: 'DIRECT DISPATCH',
-    desc: 'Requests auto-match with qualified local tradesmen without bid wars or wait times.',
-    Icon: Zap,
-  },
-  {
-    step: '02',
-    title: 'LOCKED PRICING',
-    desc: 'Standardized rate cards and optimistic concurrency lock prevent surprise overcharging.',
-    Icon: ShieldCheck,
-  },
-  {
-    step: '03',
-    title: 'VERIFIED SIGN-OFF',
-    desc: 'Payments and ratings release strictly when the task transitions to COMPLETED status.',
-    Icon: Layers,
-  },
+const PRO_ROLES = [
+  'Students', 'Electricians', 'Plumbers', 'Cleaners', 'Caterers', 'Photographers', 'Carpenters', 'Freelancers'
 ];
 
 export default function Home() {
   const navigate = useNavigate();
-  const { mode, theme: t } = useTheme();
-  const [categories, setCategories] = useState([]);
+  const [jobs, setJobs] = useState([]);
 
   useEffect(() => {
     api.get('/Categories')
       .then((res) => {
         if (res.data && res.data.length > 0) {
-          const merged = res.data.map((cat, idx) => ({
+          const mapped = res.data.map((cat, idx) => ({
             name: cat.catName,
-            price: `₹${cat.customerPrice}`,
-            code: `TR-0${idx + 1}`,
-            image: STATIC_CATEGORIES[idx % STATIC_CATEGORIES.length].image,
+            price: cat.customerPrice || 500,
+            area: ['Kothrud', 'Baner', 'Wakad', 'Hadapsar'][idx % 4],
+            timing: 'Available Today',
+            photos: 1,
+            picked: (idx % 3) + 1,
+            desc: `Verified on-demand ${cat.catName.toLowerCase()} support across Pune.`,
           }));
-          setCategories(merged);
+          setJobs(mapped);
         } else {
-          setCategories(STATIC_CATEGORIES);
+          setJobs(STATIC_JOBS);
         }
       })
-      .catch(() => setCategories(STATIC_CATEGORIES));
+      .catch(() => setJobs(STATIC_JOBS));
   }, []);
 
-  const displayCategories = categories.length > 0 ? categories : STATIC_CATEGORIES;
+  const displayJobs = jobs.length > 0 ? jobs : STATIC_JOBS;
 
   return (
-    <div
-      style={{
-        background: t.bg,
-        color: t.text,
-        transition: 'background 150ms ease, color 150ms ease',
-      }}
-      className="w-full min-h-screen"
-    >
-      <div className="max-w-6xl mx-auto px-4 sm:px-8 py-8 space-y-16">
-        
-        {/* ─── Hero Section ─── */}
-        <section className="pt-4 sm:pt-10">
-          <div className="flex items-center gap-2 mb-4">
-            <span
-              className="wd-mono text-[10px] sm:text-xs font-bold px-2 py-0.5 border uppercase tracking-wider"
-              style={{
-                background: t.accentSoft,
-                borderColor: t.border,
-                color: t.accent,
-              }}
-            >
-              PUNE 
-            </span>
-            <span className="flex items-center gap-1.5 wd-mono text-[10px] font-bold" style={{ color: t.success }}>
-              <span className="w-2 h-2 rounded-full inline-block" style={{ background: t.success }} />
-              VERIFIED WORKFORCE
-            </span>
-          </div>
+    <div className="min-h-screen bg-[#0B0B0D] text-[#F7F6F2] flex flex-col font-sans selection:bg-[#F4A340] selection:text-[#0B0B0D]">
+      <Navbar />
 
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
-            <div className="lg:col-span-8 space-y-5">
-              <h1
-                className="wd-display font-black text-3xl sm:text-5xl lg:text-6xl tracking-tight leading-none uppercase"
-                style={{ color: t.text }}
-              >
-                Post the job. <span style={{ color: t.accent }}>Find the worker.</span> Close it out.
+      <main className="flex-1">
+        
+        {/* HERO SECTION */}
+        <section className="w-full pt-12 pb-20 px-6 border-b border-[#27272A]">
+          <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+            
+            <div className="lg:col-span-7 space-y-7">
+              <div className="inline-flex items-center gap-2 px-3 py-1 bg-[#16161A] border border-[#27272A] rounded-full text-xs text-[#F4A340]">
+                <Sparkles size={14} />
+                <span className="font-mono uppercase tracking-wider text-[11px]">Pune-First Marketplace</span>
+              </div>
+
+              <h1 className="font-bold text-4xl sm:text-6xl tracking-tight leading-[1.08]">
+                Got a job? <br />
+                <span className="text-[#A0A0AA]">Post it. Let someone pick it up.</span>
               </h1>
 
-              <p className="text-sm sm:text-base leading-relaxed max-w-xl" style={{ color: t.muted }}>
-                Standardized platform pricing, real-time work-order tracking, and verified trade professionals. Built like physical tools for repeat daily operation.
+              <p className="text-base text-[#A0A0AA] max-w-lg leading-relaxed">
+                Describe the task, timeline, and Pune location. Local verified tradespeople and independent pros pick your job, and you choose who gets it done.
               </p>
 
-              <div className="flex flex-wrap items-center gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={() => navigate('/login')}
-                  className="wd-mono wd-btn text-xs font-bold px-6 py-3.5 flex items-center gap-2 cursor-pointer shadow-xs"
-                  style={{
-                    background: t.accent,
-                    color: t.accentText,
-                    border: 'none',
-                  }}
-                >
-                  BOOK A SERVICE <ArrowRight size={14} strokeWidth={2.5} />
-                </button>
+              <div className="bg-[#16161A] border border-[#27272A] p-4 rounded-[16px] max-w-lg space-y-3">
+                <div className="space-y-1">
+                  <span className="text-[10px] font-mono text-[#A0A0AA] uppercase">WHAT NEEDS TO BE DONE?</span>
+                  <input 
+                    type="text" 
+                    readOnly 
+                    value="My AC isn't cooling..." 
+                    className="w-full bg-[#0B0B0D] border border-[#27272A] text-[#F7F6F2] px-3.5 py-2.5 rounded-[10px] text-xs focus:outline-none cursor-default"
+                  />
+                </div>
+                <div className="flex items-center justify-between pt-1">
+                  <span className="text-xs text-[#A0A0AA] flex items-center gap-1">
+                    <MapPin size={13} className="text-[#F4A340]" /> Pune (Kothrud, Baner, Wakad & more)
+                  </span>
+                  <button 
+                    onClick={() => navigate('/register')}
+                    className="bg-[#F4A340] hover:bg-[#E09230] text-[#0B0B0D] font-semibold text-xs px-4 py-2 rounded-[8px] transition-colors"
+                  >
+                    Post a Job →
+                  </button>
+                </div>
+              </div>
+            </div>
 
-                <button
-                  type="button"
+            <div className="lg:col-span-5 flex justify-center">
+              <div className="w-full max-w-md bg-[#16161A] border border-[#27272A] p-6 rounded-[16px] space-y-5 shadow-xl">
+                <div className="flex items-center justify-between pb-3 border-b border-[#27272A] text-xs font-mono">
+                  <span className="flex items-center gap-2 text-[#F4A340]">
+                    <span className="w-2 h-2 rounded-full bg-[#F4A340] animate-ping" />
+                    LIVE JOB POSTED
+                  </span>
+                  <span className="text-[#57575E]">Just now</span>
+                </div>
+
+                <div className="space-y-3">
+                  <span className="text-[10px] font-mono text-[#A0A0AA] uppercase">AC REPAIR</span>
+                  <h3 className="font-semibold text-lg text-[#F7F6F2]">
+                    Keeps running but isn't cooling properly.
+                  </h3>
+                  <div className="flex items-center justify-between text-xs text-[#A0A0AA]">
+                    <span className="flex items-center gap-1"><MapPin size={13} /> Kothrud, Pune</span>
+                    <span className="font-bold text-base text-[#F7F6F2]">₹700</span>
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t border-[#27272A] flex items-center justify-between text-[10px] font-mono">
+                  <span className="text-[#F7F6F2]">● POSTED</span>
+                  <span className="text-[#57575E]">───</span>
+                  <span className="text-[#F4A340]">● 3 PICKED</span>
+                  <span className="text-[#57575E]">───</span>
+                  <span className="text-[#57575E]">○ CHOOSE</span>
+                </div>
+
+                <button 
                   onClick={() => navigate('/login')}
-                  className="wd-mono wd-btn text-xs font-semibold px-5 py-3.5 border cursor-pointer"
-                  style={{
-                    borderColor: t.border,
-                    color: t.text,
-                    background: 'transparent',
-                  }}
+                  className="w-full bg-[#27272A] hover:bg-[#323238] text-[#F7F6F2] text-xs py-2.5 rounded-[8px] font-medium transition-colors"
                 >
-                  OPERATE AS WORKER
+                  View Responses →
                 </button>
               </div>
             </div>
-          
+
           </div>
         </section>
-        
 
-        {/* ─── Service Category Photo Cards ─── */}
-        <section id="services" className="space-y-6">
-          <div className="flex justify-between items-baseline border-b pb-3" style={{ borderColor: t.border }}>
-            <div className="flex items-center gap-2">
-              <span className="wd-mono text-xs font-bold" style={{ color: t.accent }}></span>
-              <h2 className="wd-display font-black text-xl uppercase tracking-tight" style={{ color: t.text }}>
-                Standard Service Catalog
+        {/* HOW IT WORKS */}
+        <section id="how-it-works" className="w-full py-20 px-6 border-b border-[#27272A]">
+          <div className="max-w-7xl mx-auto space-y-12">
+            <div className="space-y-2">
+              <span className="text-xs font-mono uppercase text-[#F4A340]">Simple Flow</span>
+              <h2 className="text-3xl font-bold tracking-tight text-[#F7F6F2]">Post. Pick. Choose. Done.</h2>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[
+                { num: '01', title: 'Post', desc: 'Describe what needs doing, your timing, and location in Pune.', icon: Briefcase },
+                { num: '02', title: 'Pick', desc: 'Nearby verified workers claim the job from their feed.', icon: Zap },
+                { num: '03', title: 'Choose', desc: 'Review responder profiles, ratings, and choose your pro.', icon: Layers },
+                { num: '04', title: 'Done', desc: 'Task gets completed at the fixed transparent rate. Done.', icon: CheckCircle2 },
+              ].map((step) => {
+                const Icon = step.icon;
+                return (
+                  <div key={step.num} className="bg-[#16161A] border border-[#27272A] p-6 rounded-[14px] flex flex-col justify-between space-y-6 hover:border-[#3E3E44] transition-all">
+                    <div className="space-y-3">
+                      <div className="w-8 h-8 rounded-[8px] bg-[#0B0B0D] border border-[#27272A] flex items-center justify-center text-[#F4A340]">
+                        <Icon size={16} />
+                      </div>
+                      <h3 className="font-semibold text-lg text-[#F7F6F2]">{step.title}</h3>
+                      <p className="text-xs text-[#A0A0AA] leading-relaxed">{step.desc}</p>
+                    </div>
+                    <span className="text-[10px] font-mono text-[#57575E]">STEP {step.num}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        {/* LIVE EXAMPLES */}
+        <section id="services" className="w-full py-20 px-6 border-b border-[#27272A]">
+          <div className="max-w-7xl mx-auto space-y-10">
+            <div className="flex items-end justify-between">
+              <div className="space-y-2">
+                <span className="text-xs font-mono uppercase text-[#F4A340]">Pune Tasks</span>
+                <h2 className="text-3xl font-bold tracking-tight text-[#F7F6F2]">What needs doing?</h2>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {displayJobs.slice(0, 4).map((job, idx) => (
+                <div key={idx} className="bg-[#16161A] border border-[#27272A] p-5 rounded-[14px] flex flex-col justify-between space-y-4 hover:border-[#3E3E44] transition-all">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between text-[10px] font-mono text-[#A0A0AA]">
+                      <span className="uppercase font-semibold text-[#F4A340]">{job.name}</span>
+                      <span className="flex items-center gap-1"><Clock size={11} /> {job.timing}</span>
+                    </div>
+                    <h4 className="font-semibold text-sm text-[#F7F6F2] leading-snug">{job.desc}</h4>
+                  </div>
+
+                  <div className="pt-3 border-t border-[#27272A] flex items-baseline justify-between text-xs text-[#A0A0AA]">
+                    <div className="space-y-1">
+                      <span className="flex items-center gap-1 text-[#F7F6F2]"><MapPin size={12} /> {job.area}</span>
+                      {job.photos > 0 && <span className="flex items-center gap-1 text-[11px]"><Camera size={11} /> {job.photos} photos</span>}
+                    </div>
+                    <div className="text-right">
+                      <span className="text-[9px] font-mono text-[#57575E] block">FIXED</span>
+                      <span className="font-bold text-base text-[#F7F6F2]">₹{job.price}</span>
+                    </div>
+                  </div>
+
+                  <button 
+                    onClick={() => navigate('/register')}
+                    className="w-full bg-[#27272A] hover:bg-[#F4A340] hover:text-[#0B0B0D] text-[#F7F6F2] text-xs py-2 rounded-[8px] font-medium transition-colors"
+                  >
+                    View Responses →
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* VALUE PROPS */}
+        <section className="w-full py-20 px-6 border-b border-[#27272A]">
+          <div className="max-w-7xl mx-auto space-y-12">
+            <div className="space-y-2">
+              <span className="text-xs font-mono uppercase text-[#F4A340]">Platform Standard</span>
+              <h2 className="text-3xl font-bold tracking-tight text-[#F7F6F2]">Why Workers Den</h2>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              {[
+                { title: 'Verified Pros', desc: 'Government & skill-checked independent technicians and gig workers.' },
+                { title: 'Fast Responses', desc: 'Broadcasted to active nearby workers who claim jobs in minutes.' },
+                { title: 'Fair Fixed Rates', desc: 'Standardized rate cards. No awkward bidding wars or surprise quotes.' },
+                { title: 'Simple Workflow', desc: 'Post once, compare worker cards, confirm, and verify completion.' },
+              ].map((item, idx) => (
+                <div key={idx} className="bg-[#16161A] border border-[#27272A] p-6 rounded-[14px] space-y-3">
+                  <ShieldCheck size={20} className="text-[#F4A340]" />
+                  <h3 className="font-semibold text-base text-[#F7F6F2]">{item.title}</h3>
+                  <p className="text-xs text-[#A0A0AA] leading-relaxed">{item.desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        {/* WORKER OPPORTUNITY */}
+        <section id="find-jobs" className="w-full py-20 px-6 border-b border-[#27272A]">
+          <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+            <div className="lg:col-span-6 space-y-6">
+              <span className="text-xs font-mono uppercase text-[#F4A340]">For Trade Pros & Students</span>
+              <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-[#F7F6F2]">
+                Got a skill? Get paid for it.
               </h2>
-            </div>
-            <span className="wd-mono text-xs" style={{ color: t.muted }}></span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {displayCategories.map((cat) => (
-              <div
-                key={cat.name}
+              <p className="text-sm text-[#A0A0AA] leading-relaxed">
+                Claim local jobs matching your schedule, work independently across Pune, and earn direct payouts.
+              </p>
+              <button 
                 onClick={() => navigate('/register')}
-                className="group relative border overflow-hidden cursor-pointer flex flex-col justify-end transition-all duration-200 hover:-translate-y-1"
-                style={{
-                  background: t.surface,
-                  borderColor: t.border,
-                  minHeight: 220,
-                }}
+                className="bg-[#F4A340] hover:bg-[#E09230] text-[#0B0B0D] font-semibold text-xs px-5 py-2.5 rounded-[8px] transition-colors"
               >
-                <img
-                  src={cat.image}
-                  alt={cat.name}
-                  className="absolute inset-0 w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
-                  style={{
-                    filter: mode === 'dark' ? 'brightness(0.65) contrast(1.1)' : 'brightness(0.85) contrast(1.05)',
-                  }}
-                />
+                Find Jobs in Pune →
+              </button>
+            </div>
 
-                <div
-                  className="absolute inset-0"
-                  style={{
-                    background: mode === 'dark'
-                      ? 'linear-gradient(to top, rgba(15, 18, 25, 0.95) 0%, rgba(15, 18, 25, 0.3) 60%, transparent 100%)'
-                      : 'linear-gradient(to top, rgba(28, 21, 40, 0.9) 0%, rgba(28, 21, 40, 0.25) 60%, transparent 100%)',
-                  }}
-                />
-
-                <div className="relative z-10 p-4 space-y-1">
-                  <div className="wd-display font-black text-lg text-white uppercase tracking-tight">
-                    {cat.name}
-                  </div>
-                  <div className="flex items-center justify-between pt-1">
-                    <span className="wd-mono text-xs font-bold text-white/90">
-                      from {cat.price}
-                    </span>
-                    <span className="wd-mono text-[10px] text-white/70 border border-white/30 px-1.5 py-0.5">
-                      INSTANT
-                    </span>
-                  </div>
-                </div>
+            <div className="lg:col-span-6 bg-[#16161A] border border-[#27272A] p-6 rounded-[14px] space-y-3">
+              <span className="text-xs font-mono text-[#A0A0AA] uppercase block">Open roles across Pune</span>
+              <div className="flex flex-wrap gap-2 pt-1">
+                {PRO_ROLES.map((role) => (
+                  <span key={role} className="px-3 py-1 bg-[#0B0B0D] border border-[#27272A] text-xs rounded-[6px] text-[#F7F6F2]">
+                    {role}
+                  </span>
+                ))}
               </div>
-            ))}
+            </div>
           </div>
         </section>
 
-        <section
-          className="grid grid-cols-2 lg:grid-cols-4 border divide-x"
-          style={{
-            background: t.surface,
-            borderColor: t.border,
-          }}
-        >
-          {STATS.map((s, idx) => (
-            <div key={idx} className="p-5 sm:p-6" style={{ borderColor: t.border }}>
-              <div className="wd-display font-black text-2xl sm:text-3xl" style={{ color: t.accent }}>
-                {s.value}
-              </div>
-              <div className="wd-mono text-[11px] font-semibold mt-1 uppercase tracking-wider" style={{ color: t.muted }}>
-                {s.label}
-              </div>
-            </div>
-          ))}
-        </section>
-
-        {/* ─── Workflow Execution ─── */}
-        <section id="workflow" className="space-y-6">
-          <div className="flex items-center gap-2 border-b pb-3" style={{ borderColor: t.border }}>
-            <span className="wd-mono text-xs font-bold" style={{ color: t.accent }}></span>
-            <h2 className="wd-display font-black text-xl uppercase tracking-tight" style={{ color: t.text }}>
-              Execution Protocol
+        {/* FINAL CTA */}
+        <section className="w-full py-24 px-6">
+          <div className="max-w-3xl mx-auto text-center space-y-6">
+            <h2 className="text-4xl sm:text-5xl font-bold tracking-tight text-[#F7F6F2]">
+              Whatever needs doing. <br />
+              <span className="text-[#57575E]">Someone can do it.</span>
             </h2>
-          </div>
-
-          <div
-            className="grid grid-cols-1 md:grid-cols-3 border divide-y md:divide-y-0 md:divide-x"
-            style={{ background: t.surface, borderColor: t.border }}
-          >
-            {WORKFLOW.map(({ step, title, desc, Icon }) => (
-              <div key={step} className="p-6 space-y-3" style={{ borderColor: t.border }}>
-                <div
-                  className="w-8 h-8 flex items-center justify-center border"
-                  style={{ borderColor: t.border, background: t.accentSoft, color: t.accent }}
-                >
-                  <Icon size={16} strokeWidth={2.25} />
-                </div>
-                <div className="wd-mono text-[10px] font-bold" style={{ color: t.accent }}>
-                  STEP {step}
-                </div>
-                <h3 className="wd-display font-extrabold text-base uppercase" style={{ color: t.text }}>
-                  {title}
-                </h3>
-                <p className="text-xs leading-relaxed" style={{ color: t.muted }}>
-                  {desc}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
-
-        {/* ─── Roles & Access ─── */}
-        <section id="team" className="space-y-6">
-          <div className="flex items-center gap-2 border-b pb-3" style={{ borderColor: t.border }}>
-            <span className="wd-mono text-xs font-bold" style={{ color: t.accent }}></span>
-            <h2 className="wd-display font-black text-xl uppercase tracking-tight" style={{ color: t.text }}>
-              Platform Roles
-            </h2>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            <div
-              className="p-6 border flex items-start gap-4"
-              style={{ background: t.surface, borderColor: t.border }}
-            >
-              <div
-                className="w-10 h-10 flex items-center justify-center border shrink-0"
-                style={{ borderColor: t.border, background: t.accentSoft, color: t.accent }}
+            <div className="flex justify-center gap-3 pt-2">
+              <button 
+                onClick={() => navigate('/register')}
+                className="bg-[#F4A340] hover:bg-[#E09230] text-[#0B0B0D] font-semibold text-xs px-6 py-3 rounded-[8px] transition-colors"
               >
-                <Users size={18} />
-              </div>
-              <div className="space-y-1">
-                <h4 className="wd-display font-black text-base uppercase" style={{ color: t.text }}>Customer Console</h4>
-                <p className="text-xs leading-relaxed" style={{ color: t.muted }}>
-                  Create job  with specific time slots, inspect assigned operator profiles, and release payment ratings upon closeout.
-                </p>
-              </div>
-            </div>
-
-            <div
-              className="p-6 border flex items-start gap-4"
-              style={{ background: t.surface, borderColor: t.border }}
-            >
-              <div
-                className="w-10 h-10 flex items-center justify-center border shrink-0"
-                style={{ borderColor: t.border, background: t.accentSoft, color: t.accent }}
+                Post a Job
+              </button>
+              <button 
+                onClick={() => navigate('/register')}
+                className="bg-[#16161A] border border-[#27272A] hover:border-[#F7F6F2] text-[#F7F6F2] font-semibold text-xs px-6 py-3 rounded-[8px] transition-colors"
               >
-                <Wrench size={18} />
-              </div>
-              <div className="space-y-1">
-                <h4 className="wd-display font-black text-base uppercase" style={{ color: t.text }}>Worker Terminal</h4>
-                <p className="text-xs leading-relaxed" style={{ color: t.muted }}>
-                  Discover local sector tickets, claim jobs with one click, and manage progress through the state machine.
-                </p>
-              </div>
+                Find Jobs
+              </button>
             </div>
           </div>
         </section>
 
-        {/* ─── Bottom CTA ─── */}
-        <section
-          className="border p-8 flex flex-col sm:flex-row items-center justify-between gap-6"
-          style={{ background: t.surface, borderColor: t.border }}
-        >
-          <div className="space-y-1">
-            <div className="wd-mono text-xs font-bold" style={{ color: t.accent }}>READY TO DISPATCH?</div>
-            <div className="wd-display font-black text-xl uppercase" style={{ color: t.text }}>
-              Book an appointment or claim open work orders now.
-            </div>
+      </main>
+
+      <footer className="w-full bg-[#0B0B0D] border-t border-[#27272A] py-12 px-6 text-xs text-[#57575E]">
+        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
+          <div className="font-bold text-[#F7F6F2]">
+            WORKERS<span className="text-[#F4A340]"> DEN</span> · Pune
           </div>
-
-          <button
-            type="button"
-            onClick={() => navigate('/login')}
-            className="wd-mono wd-btn text-xs font-bold px-6 py-3.5 whitespace-nowrap cursor-pointer"
-            style={{
-              background: t.accent,
-              color: t.accentText,
-              border: 'none',
-            }}
-          >
-            ENTER PLATFORM →
-          </button>
-        </section>
-
-        {/* ─── Footer ─── */}
-        <footer
-          className="pt-6 pb-12 border-t flex flex-col sm:flex-row justify-between items-center gap-4 wd-mono text-xs"
-          style={{ borderColor: t.border, color: t.muted }}
-        >
-          <div>© 2026 WORKERS DEN · ALL RIGHTS RESERVED </div>
-          <div>A samesa company product</div>
-        </footer>
-
-      </div>
+          <div>© 2026 Workers Den. All rights reserved.</div>
+        </div>
+      </footer>
     </div>
   );
 }

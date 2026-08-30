@@ -1,29 +1,36 @@
-
 /** @type {import('tailwindcss').Config} */
-export default {
-  content: [
-    "./index.html",
-    "./src/**/*.{js,ts,jsx,tsx}",
-  ],
+module.exports = {
+  content: ["./src/**/*.{js,jsx,ts,tsx}"],
   theme: {
     extend: {
       colors: {
-        brand: {
-          50: '#EFF6FF',
-          100: '#DBEAFE',
-          500: '#3B82F6',
-          600: '#2563EB', 
-          700: '#1D4ED8',
-          900: '#1E3A8A',
+        canvas: {
+          dark: "#0B0B0D",
+          light: "#F7F6F2",
         },
-        surface: {
-          light: '#F8FAFC',
-          border: '#E2E8F0',
-          dark: '#0F172A',
-          muted: '#64748B'
+        card: {
+          light: "#FFFFFF",
+          dark: "#16161A",
+        },
+        accent: {
+          DEFAULT: "#F4A340",
+          hover: "#E09230",
+        },
+        muted: {
+          dark: "#57575E",
+          light: "#A0A0AA",
         }
-      }
+      },
+      borderRadius: {
+        btn: "10px",
+        card: "14px",
+        container: "20px",
+      },
+      fontFamily: {
+        heading: ["Space Grotesk", "Manrope", "sans-serif"],
+        body: ["Inter", "sans-serif"],
+      },
     },
   },
   plugins: [],
-}
+};

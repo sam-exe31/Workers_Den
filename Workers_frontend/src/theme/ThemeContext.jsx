@@ -1,28 +1,43 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { THEME } from './tokens'; // Adjust path if needed
+import React, { createContext, useContext, useState } from 'react';
 
-// Create the Context
-const ThemeContext = createContext();
+const DARK_EDITORIAL_THEME = {
+  bg: '#0B0B0D',
+  surface: '#16161A',
+  surfaceCard: '#16161A',
+  text: '#F7F6F2',
+  muted: '#A0A0AA',
+  border: '#27272A',
+  borderHover: '#3E3E44',
+  accent: '#F4A340',
+  accentHover: '#E09230',
+  accentSoft: 'rgba(244, 163, 64, 0.1)',
+  accentText: '#0B0B0D',
+  success: '#22C55E',
+  warning: '#F59E0B',
+  error: '#EF4444',
+};
 
-// Create a Provider Component
+const ThemeContext = createContext({
+  mode: 'dark',
+  theme: DARK_EDITORIAL_THEME,
+  toggleTheme: () => {},
+});
+
 export function ThemeProvider({ children }) {
-  const [mode, setMode] = useState(() => localStorage.getItem('wd_theme') || 'light');
-
-  // Automatically save to local storage whenever it changes
-  useEffect(() => {
-    localStorage.setItem('wd_theme', mode);
-  }, [mode]);
-
-  // Get the current theme colors based on the mode
-  const theme = THEME[mode] || THEME.light;
+  const [mode] = useState('dark');
+  const theme = DARK_EDITORIAL_THEME;
 
   return (
-    <ThemeContext.Provider value={{ mode, setMode, theme }}>
+    <ThemeContext.Provider value={{ mode, theme, toggleTheme: () => {} }}>
       {children}
     </ThemeContext.Provider>
   );
 }
 
 export function useTheme() {
-  return useContext(ThemeContext);
+  const context = useContext(ThemeContext);
+  if (!context) {
+    return { mode: 'dark', theme: DARK_EDITORIAL_THEME, toggleTheme: () => {} };
+  }
+  return context;
 }

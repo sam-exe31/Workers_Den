@@ -56,9 +56,9 @@ export default function LandingNavbar() {
   };
 
   const navLinks = [
-    { label: 'SERVICES', href: '#services', code: '01', Icon: Wrench },
-    { label: 'WORKFLOW', href: '#workflow', code: '02', Icon: GitCommit },
-    { label: 'ROLES', href: '#team', code: '03', Icon: Users2 },
+    { label: 'How it works', href: '/#services', code: '01', Icon: Wrench },
+    { label: 'Find a Job', href: '/#workflow', code: '02', Icon: GitCommit },
+    { label: 'find ROLES', href: '/#team', code: '03', Icon: Users2 },
     { label: 'ABOUT US', href: '/about', code: '04', Icon: BookOpen },
 
   ];
