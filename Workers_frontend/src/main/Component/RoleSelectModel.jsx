@@ -37,16 +37,16 @@ export default function RoleSelectModal({ isOpen, onClose }) {
         {/* Modal Header */}
         <div className="mb-6">
           <span
-            className="wd-mono text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 border"
+            className="wd-mono text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 border rounded-full"
             style={{ borderColor: t.border, color: t.accent, background: t.accentSoft }}
           >
-            ONBOARDING PROTOCOL // ROLE ASSIGNMENT
+            Get started
           </span>
-          <h2 className="wd-display font-black text-2xl uppercase tracking-tight mt-2" style={{ color: t.text }}>
+          <h2 className="wd-display font-black text-2xl tracking-tight mt-2" style={{ color: t.text }}>
             Join Workers Den
           </h2>
           <p className="text-xs wd-mono mt-1" style={{ color: t.muted }}>
-            Choose your platform operational capacity to continue.
+            How do you want to use Workers Den?
           </p>
         </div>
 
@@ -55,16 +55,16 @@ export default function RoleSelectModal({ isOpen, onClose }) {
           {/* Customer Choice */}
           <div
             onClick={() => handleSelectRole('CUSTOMER')}
-            className="p-4 border cursor-pointer transition-all duration-150 hover:-translate-y-0.5 group flex items-start gap-4"
+            className="p-4 border rounded-[12px] cursor-pointer transition-all duration-150 hover:-translate-y-0.5 group flex items-start gap-4"
             style={{
               borderColor: t.border,
-              background: t.cardHover,
+              background: t.bg,
             }}
             onMouseEnter={(e) => (e.currentTarget.style.borderColor = t.accent)}
             onMouseLeave={(e) => (e.currentTarget.style.borderColor = t.border)}
           >
             <div
-              className="w-10 h-10 border flex items-center justify-center shrink-0"
+              className="w-10 h-10 border rounded-[10px] flex items-center justify-center shrink-0"
               style={{ borderColor: t.border, background: t.accentSoft, color: t.accent }}
             >
               <User size={20} strokeWidth={2.2} />
@@ -72,13 +72,13 @@ export default function RoleSelectModal({ isOpen, onClose }) {
 
             <div className="flex-1">
               <div className="flex items-center justify-between">
-                <span className="wd-display font-black text-sm uppercase" style={{ color: t.text }}>
-                  I Want to Hire / Customer
+                <span className="wd-display font-black text-sm" style={{ color: t.text }}>
+                  I need something done
                 </span>
                 <ArrowRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: t.accent }} />
               </div>
               <p className="text-xs mt-1 leading-relaxed" style={{ color: t.muted }}>
-                Book domestic services, lock standardized flat pricing, and track technicians live.
+                Post a job, pick who does it, and pay a fixed price.
               </p>
             </div>
           </div>
@@ -86,16 +86,16 @@ export default function RoleSelectModal({ isOpen, onClose }) {
           {/* Worker Choice */}
           <div
             onClick={() => handleSelectRole('WORKER')}
-            className="p-4 border cursor-pointer transition-all duration-150 hover:-translate-y-0.5 group flex items-start gap-4"
+            className="p-4 border rounded-[12px] cursor-pointer transition-all duration-150 hover:-translate-y-0.5 group flex items-start gap-4"
             style={{
               borderColor: t.border,
-              background: t.cardHover,
+              background: t.bg,
             }}
             onMouseEnter={(e) => (e.currentTarget.style.borderColor = t.accent)}
             onMouseLeave={(e) => (e.currentTarget.style.borderColor = t.border)}
           >
             <div
-              className="w-10 h-10 border flex items-center justify-center shrink-0"
+              className="w-10 h-10 border rounded-[10px] flex items-center justify-center shrink-0"
               style={{ borderColor: t.border, background: t.accentSoft, color: t.accent }}
             >
               <Wrench size={20} strokeWidth={2.2} />
@@ -103,13 +103,13 @@ export default function RoleSelectModal({ isOpen, onClose }) {
 
             <div className="flex-1">
               <div className="flex items-center justify-between">
-                <span className="wd-display font-black text-sm uppercase" style={{ color: t.text }}>
-                  I Want to Work / Technician
+                <span className="wd-display font-black text-sm" style={{ color: t.text }}>
+                  I want to work
                 </span>
                 <ArrowRight size={14} className="opacity-0 group-hover:opacity-100 transition-opacity" style={{ color: t.accent }} />
               </div>
               <p className="text-xs mt-1 leading-relaxed" style={{ color: t.muted }}>
-                Discover local work orders, claim eligible trade tickets, and receive guaranteed payouts.
+                Find jobs near you, pick the ones you want, and get paid for your skills.
               </p>
             </div>
           </div>
@@ -117,7 +117,7 @@ export default function RoleSelectModal({ isOpen, onClose }) {
 
         {/* Existing Account Footer Link */}
         <div className="mt-6 pt-4 border-t text-center wd-mono text-xs" style={{ borderColor: t.border }}>
-          <span style={{ color: t.muted }}>Already registered on platform? </span>
+          <span style={{ color: t.muted }}>Already have an account? </span>
           <button
             type="button"
             onClick={() => {
@@ -127,7 +127,7 @@ export default function RoleSelectModal({ isOpen, onClose }) {
             className="font-bold underline cursor-pointer"
             style={{ color: t.accent }}
           >
-            Log In Directly
+            Log in
           </button>
         </div>
       </div>

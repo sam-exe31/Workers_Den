@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import axiosClient from '../../api/axiosClient';
 import { useTheme } from '../../theme/ThemeContext';
-import { Eye, EyeOff, ArrowLeft, ArrowRight, ShieldCheck, AlertCircle, X, Star } from 'lucide-react';
+import { Eye, EyeOff, ArrowLeft, ArrowRight, ShieldCheck, AlertCircle, X, Tag } from 'lucide-react';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -38,7 +38,7 @@ export default function Login() {
       localStorage.setItem('token', token);
       localStorage.setItem('user', JSON.stringify({ email, role }));
 
-      setToast({ type: 'success', title: 'ACCESS GRANTED', message: `Welcome back. Routing to your ${role?.toLowerCase() || 'account'} console...` });
+      setToast({ type: 'success', title: "You're in", message: `Welcome back — taking you to your ${role?.toLowerCase() || 'account'} dashboard.` });
 
       setTimeout(() => {
         const targetPath = location.state?.from?.pathname ||
@@ -46,8 +46,8 @@ export default function Login() {
         navigate(targetPath, { replace: true });
       }, 800);
     } catch (err) {
-      const message = err.response?.data?.message || 'Invalid credentials or connection refused.';
-      setToast({ type: 'error', title: 'ACCESS DENIED', message });
+      const message = err.response?.data?.message || "Check your email and password, or the server may be offline.";
+      setToast({ type: 'error', title: "Couldn't log in", message });
     } finally {
       setLoading(false);
     }
@@ -57,7 +57,7 @@ export default function Login() {
     <div className="min-h-screen w-full flex" style={{ background: t.bg }}>
       {toast && (
         <div
-          className="fixed top-6 right-6 z-50 flex items-start gap-3 p-4 border max-w-sm w-full shadow-lg animate-in fade-in slide-in-from-top-3"
+          className="fixed top-6 right-6 z-50 flex items-start gap-3 p-4 border rounded-[12px] max-w-sm w-full shadow-lg animate-in fade-in slide-in-from-top-3"
           style={{ background: t.surface, borderColor: toast.type === 'error' ? '#EF4444' : t.success, color: t.text }}
         >
           {toast.type === 'error' ? <AlertCircle className="w-5 h-5 text-red-500 shrink-0 mt-0.5" /> : <ShieldCheck className="w-5 h-5 text-emerald-500 shrink-0 mt-0.5" />}
@@ -76,42 +76,43 @@ export default function Login() {
       <div className="hidden lg:block lg:w-[45%] relative overflow-hidden">
         <img
           src="https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=1200&auto=format&fit=crop&q=80"
-          alt="Technician at work"
+          alt=""
+          aria-hidden
           className="absolute inset-0 w-full h-full object-cover"
-          style={{ filter: mode === 'dark' ? 'brightness(0.55) contrast(1.1)' : 'brightness(0.8) contrast(1.05)' }}
+          style={{ filter: mode === 'dark' ? 'brightness(0.5) contrast(1.1)' : 'brightness(0.8) contrast(1.05)' }}
         />
         <div
           className="absolute inset-0"
-          style={{ background: 'linear-gradient(to top, rgba(15,18,25,0.92) 0%, rgba(15,18,25,0.25) 55%, rgba(15,18,25,0.1) 100%)' }}
+          style={{ background: 'linear-gradient(to top, rgba(11,11,13,0.94) 0%, rgba(11,11,13,0.35) 55%, rgba(11,11,13,0.15) 100%)' }}
         />
         <div className="relative z-10 h-full flex flex-col justify-end p-10 space-y-4">
-          <span className="wd-mono text-[10px] font-bold uppercase tracking-wider px-2 py-1 border border-white/30 text-white/90 self-start">
-            VERIFIED WORKFORCE
+          <span className="wd-mono text-[10px] font-bold uppercase tracking-wider px-2 py-1 border border-white/30 text-white/90 self-start rounded-full">
+            Pune · Now live
           </span>
-          <h2 className="wd-display font-black text-3xl text-white uppercase tracking-tight leading-tight">
-            Skilled hands, standardized pricing.
+          <h2 className="wd-display font-black text-3xl text-white tracking-tight leading-tight">
+            Skilled help, at a fixed price.
           </h2>
           <p className="text-sm text-white/75 max-w-sm leading-relaxed">
-            Every technician on Workers Den is verified, rated, and paid on completion. No bidding wars, no surprise fees.
+            Post a job, see who's available nearby, and choose who gets it done. No bidding wars, no surprise fees.
           </p>
-          <div className="flex items-center gap-1.5 pt-1">
-            {[1, 2, 3, 4, 5].map((i) => <Star key={i} size={14} className="fill-current text-amber-400" />)}
-            <span className="text-xs text-white/80 wd-mono ml-1">4.8 avg rating across 500+ jobs</span>
+          <div className="flex items-center gap-2 pt-1 text-xs text-white/80 wd-mono">
+            <Tag size={13} className="text-[#F4A340]" />
+            <span>Fixed prices up front — you choose who does the job.</span>
           </div>
         </div>
       </div>
 
       <div className="flex-1 flex items-center justify-center px-4 py-12">
-        <div className="relative z-10 w-full max-w-md p-7 sm:p-8 border shadow-xs" style={{ background: t.surface, borderColor: t.border }}>
+        <div className="relative z-10 w-full max-w-md p-7 sm:p-8 border rounded-[16px] shadow-xs" style={{ background: t.surface, borderColor: t.border }}>
           <div className="flex items-center justify-between border-b pb-4 mb-6" style={{ borderColor: t.border }}>
             <button type="button" onClick={() => navigate('/')} className="wd-mono text-xs font-bold flex items-center gap-1.5 cursor-pointer hover:opacity-75" style={{ color: t.muted }}>
-              <ArrowLeft size={14} /> BACK TO HOME
+              <ArrowLeft size={14} /> Back to home
             </button>
           </div>
 
           <div className="mb-6">
-            <h1 className="wd-display font-black text-2xl uppercase tracking-tight" style={{ color: t.text }}>Log In</h1>
-            <p className="text-xs mt-1 wd-mono" style={{ color: t.muted }}>Access your dispatch console.</p>
+            <h1 className="wd-display font-black text-2xl tracking-tight" style={{ color: t.text }}>Welcome back</h1>
+            <p className="text-xs mt-1 wd-mono" style={{ color: t.muted }}>Log in to your Workers Den account.</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-4">
@@ -120,7 +121,7 @@ export default function Login() {
               <input
                 type="email" name="email" required value={formData.email} onChange={handleChange}
                 placeholder="you@example.com"
-                className="w-full px-3 py-2.5 text-xs wd-mono bg-transparent border outline-none transition-colors"
+                className="w-full px-3 py-2.5 text-xs wd-mono bg-transparent border rounded-[10px] outline-none transition-colors"
                 style={{ borderColor: t.border, color: t.text }}
                 onFocus={(e) => (e.target.style.borderColor = t.accent)}
                 onBlur={(e) => (e.target.style.borderColor = t.border)}
@@ -133,7 +134,7 @@ export default function Login() {
                 <input
                   type={showPassword ? 'text' : 'password'} name="password" required value={formData.password} onChange={handleChange}
                   placeholder="••••••••••••"
-                  className="w-full px-3 py-2.5 pr-10 text-xs wd-mono bg-transparent border outline-none transition-colors"
+                  className="w-full px-3 py-2.5 pr-10 text-xs wd-mono bg-transparent border rounded-[10px] outline-none transition-colors"
                   style={{ borderColor: t.border, color: t.text }}
                   onFocus={(e) => (e.target.style.borderColor = t.accent)}
                   onBlur={(e) => (e.target.style.borderColor = t.border)}
@@ -146,10 +147,10 @@ export default function Login() {
 
             <button
               type="submit" disabled={loading}
-              className="w-full wd-mono wd-btn text-xs font-bold py-3 flex items-center justify-center gap-2 mt-3 cursor-pointer disabled:opacity-50"
-              style={{ background: t.accent, color: t.accentText, border: 'none' }}
+              className="group w-full wd-mono text-xs font-bold py-3 flex items-center justify-center gap-2 mt-3 cursor-pointer disabled:opacity-50 rounded-[10px] transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0"
+              style={{ background: t.accent, color: t.accentText, boxShadow: '0 10px 25px -6px rgba(244,163,64,0.4)' }}
             >
-              {loading ? 'AUTHENTICATING...' : 'LOG IN'} <ArrowRight size={14} />
+              {loading ? 'Logging in…' : 'Log in'} <ArrowRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
             </button>
           </form>
 
