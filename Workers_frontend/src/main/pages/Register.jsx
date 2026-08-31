@@ -21,6 +21,19 @@ export default function Register() {
   });
 
   useEffect(() => {
+    const token = localStorage.getItem('token');
+    const userStr = localStorage.getItem('user');
+    if (token && userStr) {
+      try {
+        const u = JSON.parse(userStr);
+        const role = u?.role ? u.role.replace('ROLE_', '') : '';
+        const targetPath = role === 'WORKER' ? '/worker/dashboard' : '/customer/dashboard';
+        navigate(targetPath, { replace: true });
+      } catch {}
+    }
+  }, [navigate]);
+
+  useEffect(() => {
     const roleParam = searchParams.get('role');
     if (roleParam === 'WORKER' || roleParam === 'CUSTOMER') {
       setFormData((prev) => ({ ...prev, role: roleParam }));

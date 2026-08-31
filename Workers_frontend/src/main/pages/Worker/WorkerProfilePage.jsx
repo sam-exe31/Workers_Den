@@ -4,7 +4,7 @@ import { useTheme } from '../../../theme/ThemeContext';
 import api from '../../../api/axiosClient';
 import WorkerNavbar from './WorkerNavbar';
 import { LOCALITIES } from '../../../constants/localities';
-import { CheckCircle2, AlertCircle, Star, ShieldCheck } from 'lucide-react';
+import { CheckCircle2, AlertCircle, Star, ShieldCheck, Camera, Trash2, AlertTriangle, X, Upload } from 'lucide-react';
 
 export default function WorkerProfilePage() {
   const navigate     = useNavigate();
@@ -19,11 +19,19 @@ export default function WorkerProfilePage() {
   const [locality, setLocality]     = useState(LOCALITIES[0]);
   const [maxCapacity, setMaxCapacity] = useState(2);
   const [isAvailable, setIsAvailable] = useState(true);
+  const [profileImage, setProfileImage] = useState('');
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
   const [saving, setSaving]       = useState(false);
   const [skillBusy, setSkillBusy] = useState(null);
   const [error, setError]         = useState('');
   const [success, setSuccess]     = useState('');
+
+  // Delete modal state
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [deleteConfirmText, setDeleteConfirmText] = useState('');
+  const [deleteError, setDeleteError] = useState('');
 
   const loadAll = () => {
     Promise.all([
@@ -36,16 +44,47 @@ export default function WorkerProfilePage() {
         setProfile(p);
         setBio(p.bio || '');
         setExperience(p.experience || 0);
-        setLocality(p.locality || LOCALITIES[0]);
+        setLocality(p.locality || 'Kothrud');
         setMaxCapacity(p.maxCapacity || 2);
         setIsAvailable(p.isAvailable ?? true);
+        setProfileImage(p.profileImage || p.profile_image || '');
         setCategories(resCat.data || []);
-        setMySkillIds((resSkills.data || []).map(s => s.categoryId));
+        setMySkillIds((resSkills.data || []).map(s => s.categoryId || s.catId || s.cat_id));
       })
       .catch(() => setError('Could not load your profile. Please refresh.'));
   };
 
   useEffect(() => { loadAll(); }, []);
+
+  // Image upload to Spring Boot /api/uploads/photo
+  const handleImageFileChange = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Image size exceeds 5MB limit. Please choose a smaller photo.');
+      return;
+    }
+
+    setUploadingPhoto(true);
+    setError('');
+    setSuccess('');
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await api.post('/uploads/photo', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      if (res.data?.url) {
+        setProfileImage(res.data.url);
+        setSuccess('Photo uploaded. Click "Save changes" to update your profile.');
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to upload photo to server. Please try again.');
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
 
   const toggleCategory = async (catId) => {
     setSkillBusy(catId);
@@ -74,14 +113,14 @@ export default function WorkerProfilePage() {
       const payload = {
         bio,
         experience: Number(experience),
-        profileImage: profile?.profileImage || '',
+        profileImage: profileImage,
         locality,
         isAvailable,
         maxCapacity: Number(maxCapacity),
       };
       const res = await api.post('/workers/profile', payload);
       setProfile(res.data);
-      setSuccess('Your profile has been updated.');
+      setSuccess('Your profile and photo have been saved successfully.');
     } catch (err) {
       setError(err.response?.data?.message || 'Could not save your profile. Please try again.');
     } finally {
@@ -89,9 +128,113 @@ export default function WorkerProfilePage() {
     }
   };
 
+  const handleDeleteAccount = async () => {
+    setDeleting(true);
+    setDeleteError('');
+    try {
+      // Try worker delete first, then user delete if provided by API
+      try {
+        await api.delete('/workers/me');
+      } catch {
+        await api.delete('/users/me');
+      }
+      localStorage.clear();
+      navigate('/login', { replace: true });
+    } catch (err) {
+      const msg = err.response?.data?.message || 'Could not delete account at this time. Please try again.';
+      setDeleteError(msg);
+      setDeleting(false);
+    }
+  };
+
+  const rawUser = localStorage.getItem('user');
+  const user = rawUser ? JSON.parse(rawUser) : null;
+  const userName = user?.fullName || profile?.userName || 'Worker';
+  const initials = userName.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() || 'W';
+
   return (
     <div style={{ background: t.bg, color: t.text }} className="min-h-screen flex flex-col font-sans">
       <WorkerNavbar />
+
+      {/* Delete Account Modal */}
+      {showDeleteModal && (
+        <div
+          className="fixed inset-0 z-[100] flex items-center justify-center px-4"
+          style={{ background: 'rgba(24, 32, 46, 0.65)', backdropFilter: 'blur(3px)' }}
+          onClick={() => !deleting && setShowDeleteModal(false)}
+        >
+          <div
+            className="w-full max-w-md border shadow-xl p-6 space-y-5"
+            style={{ background: t.surface, borderColor: t.stamp }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div className="flex items-start justify-between border-b pb-3" style={{ borderColor: t.border }}>
+              <div className="flex items-center gap-2" style={{ color: t.stamp }}>
+                <AlertTriangle size={18} />
+                <span className="wd-display font-black text-lg uppercase">Delete Worker Account</span>
+              </div>
+              <button
+                type="button"
+                onClick={() => !deleting && setShowDeleteModal(false)}
+                className="cursor-pointer hover:opacity-60"
+                style={{ color: t.muted }}
+              >
+                <X size={16} />
+              </button>
+            </div>
+
+            <div className="space-y-3 text-xs leading-relaxed" style={{ color: t.muted }}>
+              <p className="font-bold text-sm" style={{ color: t.text }}>
+                Are you sure you want to permanently delete your worker profile?
+              </p>
+              <p>
+                This action is <strong style={{ color: t.stamp }}>permanent and irreversible</strong>. Your worker profile, trade qualifications, and dashboard access will be completely deleted.
+              </p>
+              <div>
+                <label className="block wd-mono text-[10px] font-bold uppercase mb-1" style={{ color: t.muted }}>
+                  Type <span style={{ color: t.stamp }}>DELETE</span> to confirm
+                </label>
+                <input
+                  type="text"
+                  value={deleteConfirmText}
+                  onChange={e => setDeleteConfirmText(e.target.value)}
+                  placeholder="DELETE"
+                  className="w-full px-3 py-2 border outline-none wd-mono uppercase text-xs"
+                  style={{ borderColor: t.border, color: t.text, background: t.cardHover }}
+                />
+              </div>
+            </div>
+
+            {deleteError && (
+              <div className="p-3 text-xs wd-mono border" style={{ background: 'rgba(194,59,30,0.08)', borderColor: t.stamp, color: t.stamp }}>
+                {deleteError}
+              </div>
+            )}
+
+            <div className="flex gap-3 pt-2">
+              <button
+                type="button"
+                disabled={deleting}
+                onClick={() => setShowDeleteModal(false)}
+                className="flex-1 wd-mono text-xs font-bold py-3 border cursor-pointer"
+                style={{ borderColor: t.border, color: t.text, background: 'transparent' }}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                disabled={deleting || deleteConfirmText.trim().toUpperCase() !== 'DELETE'}
+                onClick={handleDeleteAccount}
+                className="flex-1 wd-mono wd-btn text-xs font-bold py-3 flex items-center justify-center gap-1.5 cursor-pointer disabled:opacity-40"
+                style={{ background: t.stamp, color: '#fff', border: 'none' }}
+              >
+                <Trash2 size={13} />
+                {deleting ? 'Deleting…' : 'Permanently Delete'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <main className="flex-1 max-w-3xl w-full mx-auto px-4 sm:px-8 py-8 space-y-6">
 
@@ -146,6 +289,79 @@ export default function WorkerProfilePage() {
         )}
 
         <form onSubmit={handleSave} className="space-y-6">
+
+          {/* Profile Photo Section */}
+          <div className="border p-5 space-y-4" style={{ borderColor: t.border, background: t.surface }}>
+            <label className="block text-xs wd-mono uppercase tracking-wider font-semibold" style={{ color: t.muted }}>
+              Profile Photo
+            </label>
+            <div className="flex flex-col sm:flex-row items-center gap-5">
+              {/* Photo / Avatar Preview */}
+              <div className="relative shrink-0">
+                {profileImage ? (
+                  <img
+                    src={profileImage}
+                    alt={userName}
+                    className="w-20 h-20 rounded-full object-cover border-2 shadow-sm"
+                    style={{ borderColor: t.accent }}
+                  />
+                ) : (
+                  <div
+                    className="w-20 h-20 rounded-full border-2 flex items-center justify-center wd-display font-black text-xl"
+                    style={{ borderColor: t.border, background: t.accentSoft, color: t.accent }}
+                  >
+                    {initials}
+                  </div>
+                )}
+              </div>
+
+              {/* Controls */}
+              <div className="flex-1 space-y-3 w-full">
+                <div className="flex flex-wrap gap-2">
+                  <label
+                    className={`wd-mono text-xs font-bold px-4 py-2 border cursor-pointer inline-flex items-center gap-1.5 transition-colors ${uploadingPhoto ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    style={{ borderColor: t.accent, color: t.accent, background: t.accentSoft }}
+                  >
+                    <Upload size={13} />
+                    {uploadingPhoto ? 'Uploading image file…' : 'Choose image file'}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      disabled={uploadingPhoto}
+                      onChange={handleImageFileChange}
+                      className="hidden"
+                    />
+                  </label>
+
+                  {profileImage && (
+                    <button
+                      type="button"
+                      onClick={() => setProfileImage('')}
+                      disabled={uploadingPhoto}
+                      className="wd-mono text-xs font-bold px-3 py-2 border cursor-pointer hover:opacity-75"
+                      style={{ borderColor: t.border, color: t.stamp }}
+                    >
+                      Remove
+                    </button>
+                  )}
+                </div>
+
+                <div>
+                  <span className="wd-mono text-[10px] block mb-1" style={{ color: t.muted }}>
+                    Or enter image URL:
+                  </span>
+                  <input
+                    type="url"
+                    value={profileImage.startsWith('data:') ? '' : profileImage}
+                    onChange={e => setProfileImage(e.target.value)}
+                    placeholder="https://example.com/photo.jpg"
+                    className="w-full px-3 py-2 text-xs border outline-none wd-mono"
+                    style={{ borderColor: t.border, color: t.text, background: t.cardHover }}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
 
           {/* Availability toggle */}
           <div
@@ -300,6 +516,32 @@ export default function WorkerProfilePage() {
             </button>
           </div>
         </form>
+
+        {/* Danger Zone: Account Deletion */}
+        <div className="pt-8 border-t space-y-4" style={{ borderColor: t.border }}>
+          <div className="wd-mono text-xs font-bold uppercase tracking-wider" style={{ color: t.stamp }}>
+            Danger Zone
+          </div>
+          <div className="border p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4" style={{ background: 'rgba(194,59,30,0.04)', borderColor: t.stamp }}>
+            <div>
+              <div className="font-semibold text-sm" style={{ color: t.text }}>
+                Permanently Delete Account
+              </div>
+              <div className="wd-mono text-xs mt-0.5" style={{ color: t.muted }}>
+                Once deleted, your profile and application access will be permanently removed.
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => { setDeleteConfirmText(''); setDeleteError(''); setShowDeleteModal(true); }}
+              className="wd-mono text-xs font-bold px-4 py-2.5 border cursor-pointer shrink-0 transition-colors"
+              style={{ borderColor: t.stamp, color: t.stamp, background: 'transparent' }}
+            >
+              Delete Account
+            </button>
+          </div>
+        </div>
+
       </main>
     </div>
   );

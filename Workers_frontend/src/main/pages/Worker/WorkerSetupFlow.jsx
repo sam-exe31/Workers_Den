@@ -106,10 +106,34 @@ export default function WorkerSetupFlow() {
   const [showAllPune, setShowAllPune] = useState(false);
   const [isAvailable, setIsAvailable] = useState(true);
   const [bio, setBio] = useState('');
+  const [profileImage, setProfileImage] = useState('');
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
-  // UI state
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  // Handle Photo selection & upload to Spring Boot /api/uploads/photo
+  const handlePhotoUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      setError('Image size exceeds 5MB limit. Please choose a smaller photo.');
+      return;
+    }
+    setUploadingPhoto(true);
+    setError('');
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      const res = await api.post('/uploads/photo', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      if (res.data?.url) {
+        setProfileImage(res.data.url);
+      }
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to upload photo to server. Please try again.');
+    } finally {
+      setUploadingPhoto(false);
+    }
+  };
 
   // User info
   const rawUser = localStorage.getItem('user');
@@ -168,7 +192,7 @@ export default function WorkerSetupFlow() {
         locality,
         isAvailable,
         maxCapacity: 2,
-        profileImage: '',
+        profileImage,
       });
       localStorage.setItem('worker_setup_complete', 'true');
       navigate('/worker/dashboard', { replace: true });
@@ -528,26 +552,61 @@ export default function WorkerSetupFlow() {
                 A clear photo helps customers recognize you when you arrive.
               </p>
               <div
-                className="flex flex-col items-center gap-4 py-10 border-2 border-dashed"
-                style={{ borderColor: t.border }}
+                className="flex flex-col items-center gap-4 py-8 px-4 border-2 border-dashed text-center"
+                style={{ borderColor: t.border, background: t.cardHover }}
               >
-                <div
-                  className="w-16 h-16 flex items-center justify-center border"
-                  style={{ borderColor: t.border, background: t.cardHover, color: t.muted }}
-                >
-                  <Camera size={24} />
+                {profileImage ? (
+                  <img
+                    src={profileImage}
+                    alt="Preview"
+                    className="w-20 h-20 rounded-full object-cover border-2 shadow-sm"
+                    style={{ borderColor: t.accent }}
+                  />
+                ) : (
+                  <div
+                    className="w-16 h-16 flex items-center justify-center border rounded-full"
+                    style={{ borderColor: t.border, background: t.surface, color: t.muted }}
+                  >
+                    <Camera size={24} />
+                  </div>
+                )}
+
+                <div>
+                  <div className="text-sm font-medium" style={{ color: t.text }}>
+                    {profileImage ? 'Photo attached' : 'Upload your photo'}
+                  </div>
+                  <div className="wd-mono text-[11px] mt-1" style={{ color: t.muted }}>
+                    JPG or PNG, max 5 MB
+                  </div>
                 </div>
-                <div className="text-center">
-                  <div className="text-sm font-medium" style={{ color: t.text }}>Upload your photo</div>
-                  <div className="wd-mono text-[11px] mt-1" style={{ color: t.muted }}>JPG or PNG, max 5 MB</div>
+
+                <div className="flex flex-wrap items-center justify-center gap-2">
+                  <label
+                    className={`wd-mono text-xs font-bold px-5 py-2.5 border cursor-pointer inline-flex items-center gap-1.5 ${uploadingPhoto ? 'opacity-50 cursor-not-allowed' : ''}`}
+                    style={{ borderColor: t.accent, color: t.accent, background: t.accentSoft }}
+                  >
+                    {uploadingPhoto ? 'Uploading photo…' : 'Choose photo'}
+                    <input
+                      type="file"
+                      accept="image/*"
+                      disabled={uploadingPhoto}
+                      onChange={handlePhotoUpload}
+                      className="hidden"
+                    />
+                  </label>
+
+                  {profileImage && (
+                    <button
+                      type="button"
+                      onClick={() => setProfileImage('')}
+                      disabled={uploadingPhoto}
+                      className="wd-mono text-xs font-bold px-3 py-2.5 border cursor-pointer hover:opacity-70"
+                      style={{ borderColor: t.border, color: t.stamp }}
+                    >
+                      Remove
+                    </button>
+                  )}
                 </div>
-                <label
-                  className="wd-mono text-xs font-bold px-5 py-2.5 border cursor-pointer"
-                  style={{ borderColor: t.accent, color: t.accent }}
-                >
-                  Choose photo
-                  <input type="file" accept="image/*" className="hidden" />
-                </label>
               </div>
               <NavButtons step={step} onBack={goBack} onNext={() => setStep(8)} onSkip={() => setStep(8)} loading={loading} nextLabel="Continue" t={t} />
             </div>

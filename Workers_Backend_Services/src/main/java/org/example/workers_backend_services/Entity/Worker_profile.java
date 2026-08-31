@@ -37,7 +37,7 @@ public class Worker_profile {
     @Column(name = "completed_jobs", nullable = false)
     private Integer completedJobs = 0;
 
-    @Column(name = "profile_image")
+    @Column(name = "profile_image", columnDefinition = "LONGTEXT")
     private String profileImage;
 
     @Column(nullable = false)

@@ -12,7 +12,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -61,10 +63,22 @@ public class Service_Request_Services implements Service_Request_interface {
                 .status(ServiceStatus.OPEN)
                 .build();
 
-        return mapToDTO(serviceRequestRepository.save(request));
+        if (dto.getPhotos() != null && !dto.getPhotos().isEmpty()) {
+            List<JobPhoto> photoEntities = dto.getPhotos().stream()
+                    .map(url -> JobPhoto.builder()
+                            .imageUrl(url)
+                            .serviceRequest(request)
+                            .build())
+                    .toList();
+            request.setPhotos(photoEntities);
+        }
+
+        Service_request savedJob = serviceRequestRepository.save(request);
+        return mapToDTO(savedJob);
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Service_requestResponseDTO> getMyCustomerJobs(String customerEmail) {
         return serviceRequestRepository.findByCustomer_EmailOrderByCreatedAtDesc(customerEmail).stream()
                 .map(this::mapToDTO)
@@ -72,6 +86,7 @@ public class Service_Request_Services implements Service_Request_interface {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Service_requestResponseDTO> getAvailableJobsForWorker(String workerEmail) {
         Worker_profile worker = workerProfileRepository.findByUser_Email(workerEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("Worker profile not found for: " + workerEmail));
@@ -86,12 +101,13 @@ public class Service_Request_Services implements Service_Request_interface {
             return List.of();
         }
 
-        return serviceRequestRepository.findAvailableJobsForWorker(worker.getId(), worker.getLocality()).stream()
+        return serviceRequestRepository.findAvailableJobsForWorker(worker.getId()).stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
 
     @Override
+    @Transactional(readOnly = true)
     public List<Service_requestResponseDTO> getMyWorkerJobs(String workerEmail) {
         Worker_profile worker = workerProfileRepository.findByUser_Email(workerEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("Worker profile not found for: " + workerEmail));
@@ -102,9 +118,16 @@ public class Service_Request_Services implements Service_Request_interface {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public Service_requestResponseDTO getJobById(Long jobId, String userEmail) {
         Service_request job = serviceRequestRepository.findById(jobId)
                 .orElseThrow(() -> new ResourceNotFoundException("Job not found with ID: " + jobId));
+
+        // Force Hibernate to initialize lazy photos
+        if (job.getPhotos() != null) {
+            job.getPhotos().size();
+        }
+
         return mapToDTO(job);
     }
 
@@ -205,16 +228,25 @@ public class Service_Request_Services implements Service_Request_interface {
     }
 
     private Service_requestResponseDTO mapToDTO(Service_request job) {
+        List<String> photoUrls = Collections.emptyList();
+        if (job.getPhotos() != null && !job.getPhotos().isEmpty()) {
+            photoUrls = job.getPhotos().stream()
+                    .map(JobPhoto::getImageUrl)
+                    .filter(Objects::nonNull)
+                    .toList();
+        }
+
         return Service_requestResponseDTO.builder()
-                .requestId(job.getId())
-                .customerId(job.getCustomer().getUser_id())
-                .customerName(job.getCustomer().getUser_name())
-                .customerPhone(job.getCustomer().getPhone())
+                .requestId(job.getId() != null ? job.getId() : null)
+                .customerId(job.getCustomer() != null ? job.getCustomer().getUser_id() : null)
+                .customerName(job.getCustomer() != null ? job.getCustomer().getUser_name() : null)
+                .customerPhone(job.getCustomer() != null ? job.getCustomer().getPhone() : null)
                 .workerId(job.getWorker() != null ? job.getWorker().getId() : null)
-                .workerName(job.getWorker() != null ? job.getWorker().getUser().getUser_name() : null)
-                .workerPhone(job.getWorker() != null ? job.getWorker().getUser().getPhone() : null)
-                .categoryId(job.getCategory().getId())
-                .categoryName(job.getCategory().getCatName())
+                .workerName(job.getWorker() != null && job.getWorker().getUser() != null ? job.getWorker().getUser().getUser_name() : null)
+                .workerPhone(job.getWorker() != null && job.getWorker().getUser() != null ? job.getWorker().getUser().getPhone() : null)
+                .workerProfileImage(job.getWorker() != null ? job.getWorker().getProfileImage() : null)
+                .categoryId(job.getCategory() != null ? job.getCategory().getId() : null)
+                .categoryName(job.getCategory() != null ? job.getCategory().getCatName() : null)
                 .title(job.getTitle())
                 .description(job.getDescription())
                 .address(job.getAddress())
@@ -226,6 +258,7 @@ public class Service_Request_Services implements Service_Request_interface {
                 .workerPayout(job.getWorkerPayout())
                 .status(job.getStatus())
                 .createdAt(job.getCreatedAt())
+                .photos(photoUrls)
                 .build();
     }
 }

@@ -5,7 +5,8 @@ import api from '../../../api/axiosClient';
 import CustomerNavbar from '../Customer/CustomerNavbar';
 import WorkerNavbar from '../Worker/WorkerNavbar';
 import { ReviewForm, StarRating } from '../../Component/Reviews';
-import { MapPin, Calendar, Phone, ArrowLeft, CheckCircle2, Star, ShieldCheck, IndianRupee } from 'lucide-react';
+import { markRequestAsDeleted } from '../../../utils/deletedRequests';
+import { MapPin, Calendar, Phone, ArrowLeft, CheckCircle2, Star, ShieldCheck, IndianRupee, Trash2, X } from 'lucide-react';
 
 export default function JobDetailsPage() {
   const { id } = useParams();
@@ -17,6 +18,7 @@ export default function JobDetailsPage() {
   const [acting, setActing] = useState(false);
   const [existingReview, setExistingReview] = useState(null);
   const [reviewSubmitted, setReviewSubmitted] = useState(null);
+  const [zoomPhoto, setZoomPhoto] = useState(null);
 
   const rawUser = localStorage.getItem('user');
   const user = rawUser ? JSON.parse(rawUser) : null;
@@ -38,7 +40,7 @@ export default function JobDetailsPage() {
               const found = (r.data || []).find((rv) => (rv.requestId || rv.request_id) === reqId);
               setExistingReview(found || null);
             })
-            .catch(() => {});
+            .catch(() => { });
         }
       })
       .catch(() => setError('Could not locate work order record.'));
@@ -171,7 +173,16 @@ export default function JobDetailsPage() {
             </div>
 
             <div className="flex items-start gap-2.5">
-              <Phone size={14} className="mt-0.5 shrink-0" style={{ color: t.accent }} />
+              {!isWorker && job.workerProfileImage ? (
+                <img
+                  src={job.workerProfileImage}
+                  alt={job.workerName || 'Worker'}
+                  className="w-8 h-8 rounded-full object-cover border shrink-0 mt-0.5"
+                  style={{ borderColor: t.border }}
+                />
+              ) : (
+                <Phone size={14} className="mt-0.5 shrink-0" style={{ color: t.accent }} />
+              )}
               <div>
                 <div style={{ color: t.muted }}>{isWorker ? 'CUSTOMER' : 'ASSIGNED WORKER'}</div>
                 <div className="font-semibold mt-0.5" style={{ color: t.text }}>
@@ -182,6 +193,30 @@ export default function JobDetailsPage() {
               </div>
             </div>
           </div>
+
+          {/* Attached Issue Photos directly from API */}
+          {((job.photos && job.photos.length > 0) || (job.imageUrls && job.imageUrls.length > 0)) && (
+            <div className="pt-4 border-t space-y-2.5" style={{ borderColor: t.border }}>
+              <div className="wd-mono text-[10px] font-bold uppercase tracking-wider" style={{ color: t.accent }}>
+                Attached Issue Photos ({(job.photos || job.imageUrls).length})
+              </div>
+              <div className="flex flex-wrap gap-2.5">
+                {(job.photos || job.imageUrls).map((imgSrc, idx) => (
+                  <div
+                    key={idx}
+                    onClick={() => setZoomPhoto(imgSrc)}
+                    className="w-24 h-24 border overflow-hidden cursor-pointer hover:opacity-90 transition-opacity relative group"
+                    style={{ borderColor: t.border }}
+                  >
+                    <img src={imgSrc} alt={`Attachment ${idx + 1}`} className="w-full h-full object-cover" />
+                    <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white wd-mono text-[10px] font-bold transition-opacity">
+                      Zoom 🔍
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
 
           {error && (
             <div className="p-3 text-xs wd-mono border" style={{
@@ -277,7 +312,78 @@ export default function JobDetailsPage() {
             ) : null}
           </div>
         )}
+        {/* Cancelled Job Summary & Record Deletion */}
+        {job.status === 'CANCELLED' && (
+          <div
+            className="border p-6 flex flex-col sm:flex-row items-center justify-between gap-4"
+            style={{ background: 'rgba(194,59,30,0.04)', borderColor: t.stamp }}
+          >
+            <div>
+              <div className="font-bold text-sm" style={{ color: t.text }}>
+                Request Cancelled
+              </div>
+              <div className="wd-mono text-xs mt-0.5" style={{ color: t.muted }}>
+                This work order was cancelled. You can permanently delete this record.
+              </div>
+            </div>
+
+            <button
+              type="button"
+              disabled={acting}
+              onClick={async () => {
+                setActing(true);
+                const reqId = job.requestId || id;
+                markRequestAsDeleted(reqId);
+                try {
+                  await api.delete(`/jobs/${reqId}`).catch(() => { });
+                } catch { }
+                navigate('/customer/requests', { replace: true });
+              }}
+              className="wd-mono text-xs font-bold px-4 py-2.5 border cursor-pointer shrink-0 flex items-center gap-1.5 hover:bg-red-600 hover:text-white transition-colors"
+              style={{ borderColor: t.stamp, color: t.stamp }}
+            >
+              <Trash2 size={13} /> {acting ? 'Deleting…' : 'Delete Request Record'}
+            </button>
+          </div>
+        )}
       </main>
+
+      {/* Fullscreen Photo Lightbox Zoom Modal */}
+      {zoomPhoto && (
+        <div
+          className="fixed inset-0 z-50 flex flex-col items-center justify-center p-4 bg-black/85 backdrop-blur-md transition-all duration-200 animate-in fade-in"
+          onClick={() => setZoomPhoto(null)}
+        >
+          <div
+            className="relative max-w-4xl max-h-[90vh] w-full flex flex-col items-center justify-center bg-zinc-900 border border-zinc-700 p-3 shadow-2xl rounded-md overflow-hidden"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="w-full flex items-center justify-between px-3 py-2 border-b border-zinc-800 mb-2">
+              <span className="wd-mono text-xs font-bold text-zinc-300">
+                📷 Attached Issue Photo Zoom
+              </span>
+              <button
+                type="button"
+                onClick={() => setZoomPhoto(null)}
+                className="w-8 h-8 flex items-center justify-center bg-zinc-800 hover:bg-zinc-700 text-zinc-200 rounded-full transition-colors cursor-pointer"
+                title="Close"
+              >
+                <X size={16} />
+              </button>
+            </div>
+            <div className="w-full flex items-center justify-center overflow-auto max-h-[75vh]">
+              <img
+                src={zoomPhoto}
+                alt="Enlarged Attachment"
+                className="max-w-full max-h-[75vh] object-contain rounded shadow-lg transition-transform hover:scale-[1.02]"
+              />
+            </div>
+            <div className="mt-3 text-center wd-mono text-[11px] text-zinc-400 flex items-center gap-2">
+              <span>Click anywhere outside or press ✕ to close</span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

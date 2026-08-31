@@ -19,10 +19,7 @@ public interface Service_Request_Repository extends JpaRepository<Service_reques
     long countByWorker_IdAndStatusIn(Long workerId, List<ServiceStatus> statuses);
 
     @Query("SELECT sr FROM Service_request sr " +
-            "JOIN Worker_category wc ON wc.category.id = sr.category.id " +
             "WHERE sr.status = 'OPEN' " +
-            "AND sr.locality = :locality " +
-            "AND wc.workerProfile.id = :workerId " +
             "ORDER BY sr.createdAt DESC")
-    List<Service_request> findAvailableJobsForWorker(@Param("workerId") Long workerId, @Param("locality") String locality);
+    List<Service_request> findAvailableJobsForWorker(@Param("workerId") Long workerId);
 }

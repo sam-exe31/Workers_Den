@@ -17,11 +17,11 @@ import {
 } from 'lucide-react';
 
 const NAV_LINKS = [
-  { to: '/worker/dashboard', label: 'Dashboard',     icon: LayoutDashboard },
+  { to: '/worker/dashboard', label: 'Dashboard', icon: LayoutDashboard },
   { to: '/worker/find-jobs', label: 'Available Work', icon: Briefcase },
-  { to: '/worker/my-jobs',   label: 'My Jobs',        icon: Briefcase },
-  { to: '/worker/earnings',  label: 'Earnings',       icon: IndianRupee },
-  { to: '/worker/profile',   label: 'Profile',        icon: User },
+  { to: '/worker/my-jobs', label: 'My Jobs', icon: Briefcase },
+  { to: '/worker/earnings', label: 'Earnings', icon: IndianRupee },
+  { to: '/worker/profile', label: 'Profile', icon: User },
 ];
 
 // ── Logout confirmation dialog ───────────────────────────────────────────────
@@ -103,23 +103,36 @@ function LogoutDialog({ onConfirm, onCancel, firstName, t }) {
 
 // ── Main navbar ───────────────────────────────────────────────────────────────
 export default function WorkerNavbar() {
-  const navigate     = useNavigate();
-  const location     = useLocation();
+  const navigate = useNavigate();
+  const location = useLocation();
   const { theme: t } = useTheme();
 
   // ── shared worker profile from context (or fallback) ──
   const { profile: ctxProfile, toggleAvailability: ctxToggleAvailability } = useWorker();
   const [localProfile, setLocalProfile] = useState(null);
 
-  const [mobileOpen, setMobile]       = useState(false);
+  const [mobileOpen, setMobile] = useState(false);
   const [showLogoutDialog, setDialog] = useState(false);
   const [logoutHovered, setLogoutHov] = useState(false);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      if (location.pathname === '/worker/dashboard') {
+        navigate('/worker/logout');
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [location.pathname, navigate]);
 
   useEffect(() => {
     if (!ctxProfile) {
       api.get('/workers/me')
         .then(res => setLocalProfile(res.data))
-        .catch(() => {});
+        .catch(() => { });
     }
   }, [ctxProfile]);
 
@@ -136,16 +149,15 @@ export default function WorkerNavbar() {
         isAvailable: !profile.isAvailable,
       });
       setLocalProfile(res.data);
-    } catch {}
+    } catch { }
   };
 
-  const rawUser   = localStorage.getItem('user');
-  const user      = rawUser ? JSON.parse(rawUser) : null;
+  const rawUser = localStorage.getItem('user');
+  const user = rawUser ? JSON.parse(rawUser) : null;
   const firstName = user?.fullName?.split(' ')[0] || profile?.userName || 'Worker';
 
   const confirmLogout = () => {
-    localStorage.clear();
-    navigate('/login', { replace: true });
+    navigate('/worker/logout');
   };
 
   const isActive = (path) => location.pathname === path;
@@ -231,20 +243,29 @@ export default function WorkerNavbar() {
               <Bell size={15} />
             </button>
 
-            {/* Name + logout */}
+            {/* Name + avatar + logout */}
             <div className="hidden sm:flex items-center gap-0">
-              <span
-                className="wd-mono text-xs font-bold px-3 py-2 border-y border-l"
+              <Link
+                to="/worker/profile"
+                className="wd-mono text-xs font-bold px-3 py-1.5 border-y border-l flex items-center gap-2 hover:opacity-85 transition-opacity"
                 style={{ borderColor: t.border, color: t.text }}
               >
+                {(profile?.profileImage || profile?.profile_image) ? (
+                  <img
+                    src={profile.profileImage || profile.profile_image}
+                    alt={firstName}
+                    className="w-5 h-5 rounded-full object-cover border"
+                    style={{ borderColor: t.accent }}
+                  />
+                ) : null}
                 {firstName}
-              </span>
+              </Link>
 
               {/* Logout button with hover tooltip */}
               <div className="relative">
                 <button
                   type="button"
-                  onClick={() => setDialog(true)}
+                  onClick={() => navigate('/worker/logout')}
                   onMouseEnter={() => setLogoutHov(true)}
                   onMouseLeave={() => setLogoutHov(false)}
                   className="wd-mono text-xs font-bold px-2.5 py-2 border cursor-pointer flex items-center gap-1 transition-colors"
@@ -325,7 +346,7 @@ export default function WorkerNavbar() {
 
                 <button
                   type="button"
-                  onClick={() => { setMobile(false); setDialog(true); }}
+                  onClick={() => { setMobile(false); navigate('/worker/logout'); }}
                   className="w-full flex items-center gap-2 px-4 py-3 wd-mono text-xs font-bold cursor-pointer hover:opacity-75"
                   style={{ color: t.muted }}
                 >

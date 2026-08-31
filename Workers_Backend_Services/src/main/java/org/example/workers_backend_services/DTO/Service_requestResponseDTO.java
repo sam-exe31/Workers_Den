@@ -6,6 +6,7 @@ import org.example.workers_backend_services.Entity.ServiceStatus;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -20,6 +21,7 @@ public class Service_requestResponseDTO {
     private Long workerId;
     private String workerName;
     private String workerPhone;
+    private String workerProfileImage;
     private Long categoryId;
     private String categoryName;
     private String title;
@@ -32,5 +34,6 @@ public class Service_requestResponseDTO {
     private Double customerPrice;
     private Double workerPayout;
     private ServiceStatus status;
+    private List<String> photos;
     private LocalDateTime createdAt;
 }

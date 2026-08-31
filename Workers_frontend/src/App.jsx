@@ -2,6 +2,7 @@ import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './main/Component/ProtectedRoute';
 import WorkerGuard from './main/Component/WorkerGuard';
+import ErrorBoundary from './main/Component/ErrorBoundary';
 import { ThemeProvider } from './theme/ThemeContext';
 import { PALETTE } from './theme/palette';
 
@@ -12,6 +13,8 @@ import AboutUs from './main/pages/AboutUs';
 
 import CustomerDashboard from './main/pages/Customer/CustomerDashboard';
 import CreateJobPage from './main/pages/Customer/CreateJobPage';
+import CustomerRequestsPage from './main/pages/Customer/CustomerRequestsPage';
+import CustomerProfilePage from './main/pages/Customer/CustomerProfilePage';
 
 import WorkerSetupFlow from './main/pages/Worker/WorkerSetupFlow';
 import WorkerDashboard from './main/pages/Worker/WorkerDashboard';
@@ -21,6 +24,7 @@ import WorkerMyJobsPage from './main/pages/Worker/WorkerMyJobsPage';
 import WorkerEarningsPage from './main/pages/Worker/WorkerEarningsPage';
 
 import JobDetailsPage from './main/pages/jobs/JobDetailsPage';
+import LogoutConfirmPage from './main/pages/LogoutConfirmPage';
 
 function AppLayout() {
   return (
@@ -40,6 +44,8 @@ function AppLayout() {
           <Route element={<ProtectedRoute allowedRoles={['CUSTOMER']} />}>
             <Route path="/customer/dashboard" element={<CustomerDashboard />} />
             <Route path="/customer/create-job" element={<CreateJobPage />} />
+            <Route path="/customer/requests" element={<CustomerRequestsPage />} />
+            <Route path="/customer/profile" element={<CustomerProfilePage />} />
           </Route>
 
           {/* Worker Portal */}
@@ -57,9 +63,12 @@ function AppLayout() {
             </Route>
           </Route>
 
-          {/* Shared Job Details */}
+          {/* Shared Job Details & Logout Confirmation */}
           <Route element={<ProtectedRoute allowedRoles={['CUSTOMER', 'WORKER', 'ADMIN']} />}>
             <Route path="/jobs/:id" element={<JobDetailsPage />} />
+            <Route path="/logout-confirm" element={<LogoutConfirmPage />} />
+            <Route path="/customer/logout" element={<LogoutConfirmPage />} />
+            <Route path="/worker/logout" element={<LogoutConfirmPage />} />
           </Route>
 
           {/* Fallback */}
@@ -72,10 +81,12 @@ function AppLayout() {
 
 export default function App() {
   return (
-    <ThemeProvider>
-      <Router>
-        <AppLayout />
-      </Router>
-    </ThemeProvider>
+    <ErrorBoundary>
+      <ThemeProvider>
+        <Router>
+          <AppLayout />
+        </Router>
+      </ThemeProvider>
+    </ErrorBoundary>
   );
 }

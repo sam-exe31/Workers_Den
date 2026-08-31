@@ -22,6 +22,19 @@ export default function Login() {
   const [toast, setToast] = useState(null);
 
   useEffect(() => {
+    const token = localStorage.getItem('token');
+    const userStr = localStorage.getItem('user');
+    if (token && userStr) {
+      try {
+        const u = JSON.parse(userStr);
+        const role = u?.role ? u.role.replace('ROLE_', '') : '';
+        const targetPath = role === 'WORKER' ? '/worker/dashboard' : '/customer/dashboard';
+        navigate(targetPath, { replace: true });
+      } catch {}
+    }
+  }, [navigate]);
+
+  useEffect(() => {
     if (toast) {
       const timer = setTimeout(() => setToast(null), 4000);
       return () => clearTimeout(timer);
@@ -48,9 +61,11 @@ export default function Login() {
       setToast({ type: 'success', title: "You're in", message: `Taking you to your ${role?.toLowerCase() || 'account'} dashboard.` });
 
       setTimeout(() => {
-        const targetPath =
-          location.state?.from?.pathname ||
-          (role === 'WORKER' ? '/worker/dashboard' : role === 'ADMIN' ? '/customer/dashboard' : '/customer/dashboard');
+        const fromPath = location.state?.from?.pathname;
+        const isLogoutPath = fromPath && (fromPath.includes('/logout') || fromPath.includes('/login'));
+        const targetPath = (!isLogoutPath && fromPath)
+          ? fromPath
+          : (role === 'WORKER' ? '/worker/dashboard' : '/customer/dashboard');
         navigate(targetPath, { replace: true });
       }, 700);
     } catch (err) {

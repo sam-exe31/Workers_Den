@@ -51,19 +51,53 @@ function StatCard({ label, value, sub, color, t }) {
 // ── Job card ─────────────────────────────────────────────────────────────────
 function JobCard({ job, profile, onView, t }) {
   const catName = job.categoryName || job.catName || job.cat_name;
-  const matchesTrade = catName && profile?.locality;
+  const photosList = job.photos || job.imageUrls || [];
 
   return (
     <div
-      className="border p-5 flex flex-col sm:flex-row gap-4 sm:items-start hover:border-opacity-80 transition-all"
+      className="border p-5 flex flex-col sm:flex-row gap-4 sm:items-start transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md group rounded-sm"
       style={{ background: t.surface, borderColor: t.border }}
     >
+      {/* Embedded Photo Preview or Trade Cover */}
+      {photosList.length > 0 ? (
+        <div className="flex sm:flex-col gap-1.5 shrink-0">
+          <img
+            src={photosList[0]}
+            alt="Issue photo"
+            className="w-20 h-20 rounded border object-cover group-hover:scale-105 transition-transform"
+            style={{ borderColor: t.border }}
+          />
+          {photosList.length > 1 && (
+            <span className="wd-mono text-[10px] font-bold text-center" style={{ color: t.accent }}>
+              +{photosList.length - 1} photo(s)
+            </span>
+          )}
+        </div>
+      ) : (
+        <div className="w-12 h-12 rounded border flex items-center justify-center font-bold shrink-0 text-sm" style={{ borderColor: t.border, background: t.accentSoft, color: t.accent }}>
+          📷
+        </div>
+      )}
+
       {/* Left: job info */}
       <div className="flex-1 min-w-0 space-y-2">
         <div className="flex items-center gap-2 flex-wrap">
           {catName && (
-            <span className="wd-mono text-[10px] font-bold px-2 py-0.5 border" style={{ borderColor: t.border, color: t.muted }}>
+            <span className="wd-mono text-[10px] font-bold px-2 py-0.5 border uppercase tracking-wider" style={{ borderColor: t.accent, color: t.accent, background: t.accentSoft }}>
               {catName}
+            </span>
+          )}
+          {photosList.length > 0 && (
+            <span className="wd-mono text-[10px] font-bold px-2 py-0.5 border" style={{ borderColor: t.success, color: t.success, background: 'rgba(47,125,79,0.08)' }}>
+              📷 {photosList.length} Attached Photo(s)
+            </span>
+          )}
+          {(job.workerPayout > 450 || job.urgency === 'URGENT') && (
+            <span
+              className="wd-mono text-[10px] font-bold px-2 py-0.5 border flex items-center gap-1 animate-pulse"
+              style={{ borderColor: t.warning, color: t.warning, background: 'rgba(183,121,31,0.08)' }}
+            >
+              ⚡ High Wage Offer
             </span>
           )}
           {job.urgency === 'HIGH' && (
@@ -76,7 +110,7 @@ function JobCard({ job, profile, onView, t }) {
           )}
         </div>
 
-        <div className="wd-display font-black text-base" style={{ color: t.text }}>
+        <div className="wd-display font-black text-base group-hover:text-amber-600 transition-colors" style={{ color: t.text }}>
           {job.title}
         </div>
 
@@ -87,12 +121,12 @@ function JobCard({ job, profile, onView, t }) {
         )}
 
         <div className="wd-mono text-xs flex flex-wrap gap-x-4 gap-y-1" style={{ color: t.muted }}>
-          <span className="flex items-center gap-1.5">
-            <MapPin size={11} style={{ color: t.accent }} />
+          <span className="flex items-center gap-1.5 font-bold">
+            <MapPin size={12} style={{ color: t.accent }} />
             {job.locality}
           </span>
           <span className="flex items-center gap-1.5">
-            <Clock size={11} style={{ color: t.accent }} />
+            <Clock size={12} style={{ color: t.accent }} />
             {job.preferredDate}{job.preferredTime ? ` · ${job.preferredTime}` : ''}
           </span>
         </div>
@@ -101,7 +135,7 @@ function JobCard({ job, profile, onView, t }) {
       {/* Right: payout + action */}
       <div className="flex sm:flex-col items-center sm:items-end justify-between gap-3 shrink-0">
         <div className="text-right">
-          <div className="wd-mono text-[10px]" style={{ color: t.muted }}>Payout</div>
+          <div className="wd-mono text-[10px] uppercase font-bold" style={{ color: t.muted }}>Worker Payout</div>
           <div className="wd-display font-black text-xl" style={{ color: t.success }}>
             ₹{job.workerPayout}
           </div>
@@ -109,10 +143,10 @@ function JobCard({ job, profile, onView, t }) {
         <button
           type="button"
           onClick={() => onView(job.requestId)}
-          className="wd-mono wd-btn text-xs font-bold px-4 py-2.5 flex items-center gap-1.5 cursor-pointer"
+          className="wd-mono wd-btn text-xs font-bold px-4 py-2.5 flex items-center gap-1.5 cursor-pointer shadow-sm group-hover:scale-105 transition-transform"
           style={{ background: t.accent, color: t.accentText, border: 'none' }}
         >
-          View job <ArrowRight size={12} />
+          View & Claim <ArrowRight size={12} />
         </button>
       </div>
     </div>
@@ -187,25 +221,25 @@ function ActiveJobStrip({ job, onAction, actionLoading, t }) {
 
 // ── Main dashboard ────────────────────────────────────────────────────────────
 export default function WorkerDashboard() {
-  const navigate       = useNavigate();
-  const { theme: t }  = useTheme();
+  const navigate = useNavigate();
+  const { theme: t } = useTheme();
 
   // ── shared profile from WorkerGuard context ────────────────────────────
   // toggleAvailability from context updates both the Navbar and the Dashboard.
   const { profile, toggleAvailability } = useWorker();
 
   const [availableJobs, setAvailableJobs] = useState([]);
-  const [myJobs, setMyJobs]               = useState([]);
-  const [loading, setLoading]             = useState(true);
+  const [myJobs, setMyJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(null);
 
   // Filter / sort state
-  const [areaTab, setAreaTab]   = useState('myArea');
-  const [sortKey, setSortKey]   = useState('recommended');
+  const [areaTab, setAreaTab] = useState('myArea');
+  const [sortKey, setSortKey] = useState('recommended');
   const [showSort, setShowSort] = useState(false);
 
-  const rawUser   = localStorage.getItem('user');
-  const user      = rawUser ? JSON.parse(rawUser) : null;
+  const rawUser = localStorage.getItem('user');
+  const user = rawUser ? JSON.parse(rawUser) : null;
   const firstName = user?.fullName?.split(' ')[0] || profile?.userName || 'there';
 
   const load = () => {
@@ -225,20 +259,34 @@ export default function WorkerDashboard() {
 
   // ── Derived state ──────────────────────────────────────────────────────────
 
-  const activeTasks    = myJobs.filter(j => j.status === 'ACCEPTED' || j.status === 'IN_PROGRESS');
-  const completedJobs  = myJobs.filter(j => j.status === 'COMPLETED');
-  const recentWork     = [...completedJobs].reverse().slice(0, 5);
+  const activeTasks = myJobs.filter(j => j.status === 'ACCEPTED' || j.status === 'IN_PROGRESS');
+  const completedJobs = myJobs.filter(j => j.status === 'COMPLETED');
+  const recentWork = [...completedJobs].reverse().slice(0, 5);
 
-  const totalEarnings  = completedJobs.reduce((s, j) => s + (j.workerPayout || 0), 0);
+  const totalEarnings = completedJobs.reduce((s, j) => s + (j.workerPayout || 0), 0);
 
-  // Area filter
+  const [selectedCategory, setSelectedCategory] = useState('ALL');
+
+  // Categories present in available jobs
+  const categoryOptions = useMemo(() => {
+    const set = new Set();
+    availableJobs.forEach(j => {
+      if (j.categoryName) set.add(j.categoryName);
+    });
+    return Array.from(set);
+  }, [availableJobs]);
+
+  // Area & Category filter
   const filteredJobs = useMemo(() => {
     let base = availableJobs;
     if (areaTab === 'myArea' && profile?.locality) {
       base = base.filter(j => j.locality === profile.locality);
     }
+    if (selectedCategory !== 'ALL') {
+      base = base.filter(j => (j.categoryName || '').toLowerCase() === selectedCategory.toLowerCase());
+    }
     return sortJobs(base, sortKey);
-  }, [availableJobs, areaTab, sortKey, profile]);
+  }, [availableJobs, areaTab, selectedCategory, sortKey, profile]);
 
   // ── Job action ─────────────────────────────────────────────────────────────
   const handleAction = async (jobId, action) => {
@@ -382,12 +430,48 @@ export default function WorkerDashboard() {
             </span>
           </div>
 
+          {/* Category Wise Filter Strip */}
+          <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none wd-mono text-xs">
+            <span className="text-[10px] font-bold uppercase tracking-wider shrink-0 mr-1" style={{ color: t.muted }}>Trade Category:</span>
+            <button
+              type="button"
+              onClick={() => setSelectedCategory('ALL')}
+              className="px-3 py-1.5 border font-bold whitespace-nowrap cursor-pointer transition-all"
+              style={{
+                background: selectedCategory === 'ALL' ? t.accent : t.surface,
+                color: selectedCategory === 'ALL' ? t.accentText : t.text,
+                borderColor: selectedCategory === 'ALL' ? t.accent : t.border,
+              }}
+            >
+              All Trades ({availableJobs.length})
+            </button>
+            {categoryOptions.map(cat => {
+              const count = availableJobs.filter(j => (j.categoryName || '').toLowerCase() === cat.toLowerCase()).length;
+              const isSelected = selectedCategory.toLowerCase() === cat.toLowerCase();
+              return (
+                <button
+                  key={cat}
+                  type="button"
+                  onClick={() => setSelectedCategory(cat)}
+                  className="px-3 py-1.5 border font-bold whitespace-nowrap cursor-pointer transition-all"
+                  style={{
+                    background: isSelected ? t.accent : t.surface,
+                    color: isSelected ? t.accentText : t.text,
+                    borderColor: isSelected ? t.accent : t.border,
+                  }}
+                >
+                  {cat} ({count})
+                </button>
+              );
+            })}
+          </div>
+
           {/* Controls */}
           <div className="flex flex-col sm:flex-row gap-3">
             {/* Area toggle */}
             <div className="flex border" style={{ borderColor: t.border }}>
               {[
-                { key: 'myArea',  label: 'My Area' },
+                { key: 'myArea', label: 'My Area' },
                 { key: 'allPune', label: 'All Pune' },
               ].map(tab => (
                 <button

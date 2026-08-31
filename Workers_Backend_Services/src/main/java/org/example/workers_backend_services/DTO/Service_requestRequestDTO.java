@@ -7,6 +7,7 @@ import lombok.Setter;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 @Getter
 @Setter
@@ -30,6 +31,8 @@ public class Service_requestRequestDTO {
     private LocalDate preferredDate;
 
     private LocalTime preferredTime;
+
+    private List<String> photos;
 
     @NotBlank(message = "Urgency is required (e.g. LOW, MEDIUM, HIGH)")
     private String urgency;

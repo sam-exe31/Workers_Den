@@ -8,29 +8,29 @@ import { MapPin, Clock, ArrowRight, AlertCircle, Compass, ChevronDown, SlidersHo
 // ── Sort helpers ─────────────────────────────────────────────────────────────
 function sortJobs(jobs, key) {
   switch (key) {
-    case 'payout':  return [...jobs].sort((a, b) => (b.workerPayout || 0) - (a.workerPayout || 0));
-    case 'newest':  return [...jobs].sort((a, b) => (b.requestId || 0) - (a.requestId || 0));
+    case 'payout': return [...jobs].sort((a, b) => (b.workerPayout || 0) - (a.workerPayout || 0));
+    case 'newest': return [...jobs].sort((a, b) => (b.requestId || 0) - (a.requestId || 0));
     case 'nearest': return jobs; // would need coordinates — preserve server order
-    default:        return jobs;
+    default: return jobs;
   }
 }
 
 const SORT_LABELS = {
   recommended: 'Recommended',
-  payout:      'Highest payout',
-  newest:      'Newest first',
-  nearest:     'Nearest first',
+  payout: 'Highest payout',
+  newest: 'Newest first',
+  nearest: 'Nearest first',
 };
 
 export default function FindJobsPage() {
-  const navigate     = useNavigate();
+  const navigate = useNavigate();
   const { theme: t } = useTheme();
 
-  const [jobs, setJobs]         = useState([]);
-  const [profile, setProfile]   = useState(null);
-  const [loading, setLoading]   = useState(true);
-  const [claimingId, setClaimId]= useState(null);
-  const [error, setError]       = useState('');
+  const [jobs, setJobs] = useState([]);
+  const [profile, setProfile] = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [claimingId, setClaimId] = useState(null);
+  const [error, setError] = useState('');
 
   // Controls
   const [areaTab, setAreaTab] = useState('myArea');
@@ -52,14 +52,28 @@ export default function FindJobsPage() {
 
   useEffect(() => { load(); }, []);
 
-  // Area filter + sort
+  const [selectedCategory, setSelectedCategory] = useState('ALL');
+
+  // Available categories
+  const categoryOptions = useMemo(() => {
+    const set = new Set();
+    jobs.forEach(j => {
+      if (j.categoryName) set.add(j.categoryName);
+    });
+    return Array.from(set);
+  }, [jobs]);
+
+  // Area filter + Category filter + sort
   const displayed = useMemo(() => {
     let base = jobs;
     if (areaTab === 'myArea' && profile?.locality) {
       base = base.filter(j => j.locality === profile.locality);
     }
+    if (selectedCategory !== 'ALL') {
+      base = base.filter(j => (j.categoryName || '').toLowerCase() === selectedCategory.toLowerCase());
+    }
     return sortJobs(base, sortKey);
-  }, [jobs, areaTab, sortKey, profile]);
+  }, [jobs, areaTab, selectedCategory, sortKey, profile]);
 
   const handleClaim = async (jobId) => {
     setError('');
@@ -82,13 +96,18 @@ export default function FindJobsPage() {
       <main className="flex-1 max-w-5xl w-full mx-auto px-4 sm:px-8 py-8 space-y-6">
 
         {/* Header */}
-        <div className="border-b pb-4" style={{ borderColor: t.border }}>
-          <h1 className="wd-display font-black text-2xl tracking-tight" style={{ color: t.text }}>
-            Available Work
-          </h1>
-          <p className="wd-mono text-xs mt-1" style={{ color: t.muted }}>
-            Jobs matching your trade skills and location.
-          </p>
+        <div className="border-b pb-4 flex items-center justify-between" style={{ borderColor: t.border }}>
+          <div>
+            <h1 className="wd-display font-black text-2xl tracking-tight" style={{ color: t.text }}>
+              Available Work
+            </h1>
+            <p className="wd-mono text-xs mt-1" style={{ color: t.muted }}>
+              Jobs matching your trade skills and location.
+            </p>
+          </div>
+          <span className="wd-mono text-xs font-bold" style={{ color: t.accent }}>
+            {displayed.length} job{displayed.length !== 1 ? 's' : ''} available
+          </span>
         </div>
 
         {/* Error */}
@@ -101,12 +120,48 @@ export default function FindJobsPage() {
           </div>
         )}
 
+        {/* Category Filter Strip */}
+        <div className="flex items-center gap-2 overflow-x-auto pb-1 scrollbar-none wd-mono text-xs">
+          <span className="text-[10px] font-bold uppercase tracking-wider shrink-0 mr-1" style={{ color: t.muted }}>Trade Category:</span>
+          <button
+            type="button"
+            onClick={() => setSelectedCategory('ALL')}
+            className="px-3 py-1.5 border font-bold whitespace-nowrap cursor-pointer transition-all"
+            style={{
+              background: selectedCategory === 'ALL' ? t.accent : t.surface,
+              color: selectedCategory === 'ALL' ? t.accentText : t.text,
+              borderColor: selectedCategory === 'ALL' ? t.accent : t.border,
+            }}
+          >
+            All Trades ({jobs.length})
+          </button>
+          {categoryOptions.map(cat => {
+            const count = jobs.filter(j => (j.categoryName || '').toLowerCase() === cat.toLowerCase()).length;
+            const isSelected = selectedCategory.toLowerCase() === cat.toLowerCase();
+            return (
+              <button
+                key={cat}
+                type="button"
+                onClick={() => setSelectedCategory(cat)}
+                className="px-3 py-1.5 border font-bold whitespace-nowrap cursor-pointer transition-all"
+                style={{
+                  background: isSelected ? t.accent : t.surface,
+                  color: isSelected ? t.accentText : t.text,
+                  borderColor: isSelected ? t.accent : t.border,
+                }}
+              >
+                {cat} ({count})
+              </button>
+            );
+          })}
+        </div>
+
         {/* Controls */}
         <div className="flex flex-col sm:flex-row gap-3">
           {/* Area toggle */}
           <div className="flex border" style={{ borderColor: t.border }}>
             {[
-              { key: 'myArea',  label: 'My Area' },
+              { key: 'myArea', label: 'My Area' },
               { key: 'allPune', label: 'All Pune' },
             ].map(tab => (
               <button
@@ -197,16 +252,56 @@ export default function FindJobsPage() {
             {displayed.map(job => {
               const isUrgent = job.urgency === 'HIGH';
               const catName = job.categoryName || job.catName || job.cat_name;
+              const photosList = job.photos || job.imageUrls || [];
               return (
                 <div
                   key={job.requestId}
-                  className="border p-5 flex flex-col sm:flex-row gap-4 sm:items-start"
+                  className="border p-5 flex flex-col sm:flex-row gap-4 sm:items-start transition-all duration-200 hover:-translate-y-0.5 hover:shadow-md group rounded-sm"
                   style={{ background: t.surface, borderColor: t.border }}
                 >
+                  {/* Embedded Photo Preview or Trade Cover */}
+                  {photosList.length > 0 ? (
+                    <div className="flex sm:flex-col gap-1.5 shrink-0">
+                      <img
+                        src={photosList[0]}
+                        alt="Issue photo"
+                        className="w-20 h-20 rounded border object-cover group-hover:scale-105 transition-transform"
+                        style={{ borderColor: t.border }}
+                      />
+                      {photosList.length > 1 && (
+                        <span className="wd-mono text-[10px] font-bold text-center" style={{ color: t.accent }}>
+                          +{photosList.length - 1} photo(s)
+                        </span>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="w-12 h-12 rounded border flex items-center justify-center font-bold shrink-0 text-sm" style={{ borderColor: t.border, background: t.accentSoft, color: t.accent }}>
+                      📷
+                    </div>
+                  )}
+
                   {/* Left info */}
                   <div className="flex-1 min-w-0 space-y-2">
                     {/* Tags */}
                     <div className="flex items-center gap-2 flex-wrap">
+                      {catName && (
+                        <span className="wd-mono text-[10px] font-bold px-2 py-0.5 border uppercase tracking-wider" style={{ borderColor: t.accent, color: t.accent, background: t.accentSoft }}>
+                          {catName}
+                        </span>
+                      )}
+                      {photosList.length > 0 && (
+                        <span className="wd-mono text-[10px] font-bold px-2 py-0.5 border" style={{ borderColor: t.success, color: t.success, background: 'rgba(47,125,79,0.08)' }}>
+                          📷 {photosList.length} Attached Photo(s)
+                        </span>
+                      )}
+                      {(job.workerPayout > 450 || job.urgency === 'URGENT') && (
+                        <span
+                          className="wd-mono text-[10px] font-bold px-2 py-0.5 border flex items-center gap-1 animate-pulse"
+                          style={{ borderColor: t.warning, color: t.warning, background: 'rgba(183,121,31,0.08)' }}
+                        >
+                          ⚡ High Wage Offer
+                        </span>
+                      )}
                       {isUrgent && (
                         <span
                           className="wd-mono text-[10px] font-bold px-2 py-0.5 border"
@@ -215,15 +310,10 @@ export default function FindJobsPage() {
                           Urgent
                         </span>
                       )}
-                      {catName && (
-                        <span className="wd-mono text-[10px] font-bold px-2 py-0.5 border" style={{ borderColor: t.border, color: t.muted }}>
-                          {catName}
-                        </span>
-                      )}
                     </div>
 
                     {/* Title */}
-                    <div className="wd-display font-black text-base" style={{ color: t.text }}>
+                    <div className="wd-display font-black text-base group-hover:text-amber-600 transition-colors" style={{ color: t.text }}>
                       {job.title}
                     </div>
 
@@ -236,12 +326,12 @@ export default function FindJobsPage() {
 
                     {/* Meta */}
                     <div className="wd-mono text-xs flex flex-wrap gap-x-4 gap-y-1" style={{ color: t.muted }}>
-                      <span className="flex items-center gap-1.5">
-                        <MapPin size={11} style={{ color: t.accent }} />
+                      <span className="flex items-center gap-1.5 font-bold">
+                        <MapPin size={12} style={{ color: t.accent }} />
                         {job.locality}{job.address ? `, ${job.address}` : ''}
                       </span>
                       <span className="flex items-center gap-1.5">
-                        <Clock size={11} style={{ color: t.accent }} />
+                        <Clock size={12} style={{ color: t.accent }} />
                         {job.preferredDate}{job.preferredTime ? ` · ${job.preferredTime}` : ''}
                       </span>
                     </div>
