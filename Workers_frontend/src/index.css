@@ -33,6 +33,51 @@ body {
   transform: translateY(1px);
 }
 
+/* Tabular figures for money, docket numbers, dates — ledgers align their columns. */
+.wd-tnum {
+  font-variant-numeric: tabular-nums;
+  font-feature-settings: "tnum" 1;
+}
+
+/* Rubber-stamp treatment — the signature. Inked outline, uppercase, kerned out,
+   nudged off-axis like a stamp pressed by hand. Colour comes from `color`. */
+.wd-stamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4em;
+  font-family: var(--font-display);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  padding: 0.28em 0.6em;
+  border: 2px solid currentColor;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, currentColor 22%, transparent);
+  border-radius: 3px;
+  line-height: 1;
+  background: color-mix(in srgb, currentColor 7%, transparent);
+}
+
+.wd-stamp--tilt {
+  transform: rotate(-4deg);
+}
+
+/* Faint ruled paper — accountant's pad. Subtle horizontal rules over any surface. */
+.wd-ruled {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 31px,
+    color-mix(in srgb, #18202E 7%, transparent) 31px,
+    color-mix(in srgb, #18202E 7%, transparent) 32px
+  );
+}
+
+/* Keyboard focus — a clear ballpoint-blue ring for anything focusable. */
+:where(a, button, input, select, textarea):focus-visible {
+  outline: 2px solid #1D4E89;
+  outline-offset: 2px;
+}
+
 .wd-switch-knob {
   transition: transform 150ms ease;
 }

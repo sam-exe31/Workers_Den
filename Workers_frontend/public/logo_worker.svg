@@ -1,0 +1,16 @@
+<svg width="48" height="48" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Workers Den">
+  <!-- stamp tile -->
+  <rect x="1" y="1" width="46" height="46" rx="10" fill="#1D4E89"></rect>
+
+  <!-- faint inner keyline — the "seal" ring -->
+  <rect x="5" y="5" width="38" height="38" rx="6.5" fill="none" stroke="#FCFBF7" stroke-opacity="0.26" stroke-width="1.4"></rect>
+
+  <!-- the W -->
+  <path d="M10.5 15 L16 33 L24 22 L30 33 L33 20.5" stroke="#FCFBF7" stroke-width="4.6" stroke-linecap="square" stroke-linejoin="miter" fill="none"></path>
+
+  <!-- hex nut -->
+  <polygon points="35.2,20.9 30.9,18.4 30.9,13.4 35.2,10.9 39.5,13.4 39.5,18.4" fill="none" stroke="#FCFBF7" stroke-width="2.8" stroke-linejoin="miter"></polygon>
+
+  <!-- nut hole -->
+  <circle cx="35.2" cy="15.9" r="1.7" fill="#FCFBF7"></circle>
+</svg>

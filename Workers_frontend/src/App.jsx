@@ -1,6 +1,8 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import ProtectedRoute from './main/Component/ProtectedRoute';
+import { ThemeProvider } from './theme/ThemeContext';
+import { PALETTE } from './theme/palette';
 
 import Home from './main/pages/Home';
 import Login from './main/pages/Login';
@@ -18,7 +20,10 @@ import JobDetailsPage from './main/pages/jobs/JobDetailsPage';
 
 function AppLayout() {
   return (
-    <div className="min-h-screen bg-[#0B0B0D] text-[#F7F6F2] font-sans flex flex-col antialiased selection:bg-[#F4A340] selection:text-[#0B0B0D]">
+    <div
+      className="min-h-screen font-sans flex flex-col antialiased selection:bg-[#1D4E89] selection:text-[#FCFBF7]"
+      style={{ background: PALETTE.bg, color: PALETTE.text }}
+    >
       <main className="flex-1 flex flex-col">
         <Routes>
           {/* Public Routes */}
@@ -55,8 +60,10 @@ function AppLayout() {
 
 export default function App() {
   return (
-    <Router>
-      <AppLayout />
-    </Router>
+    <ThemeProvider>
+      <Router>
+        <AppLayout />
+      </Router>
+    </ThemeProvider>
   );
 }

@@ -1,43 +1,17 @@
-import React, { createContext, useContext, useState } from 'react';
+import React, { createContext, useContext } from 'react';
+import { PALETTE } from './palette';
 
-const DARK_EDITORIAL_THEME = {
-  bg: '#0B0B0D',
-  surface: '#16161A',
-  surfaceCard: '#16161A',
-  text: '#F7F6F2',
-  muted: '#A0A0AA',
-  border: '#27272A',
-  borderHover: '#3E3E44',
-  accent: '#F4A340',
-  accentHover: '#E09230',
-  accentSoft: 'rgba(244, 163, 64, 0.1)',
-  accentText: '#0B0B0D',
-  success: '#22C55E',
-  warning: '#F59E0B',
-  error: '#EF4444',
-};
+// Workers Den ships a single, deliberate "work docket" light theme for v1.
+// The context still exposes `mode` + `setMode`/`toggleTheme` so existing
+// consumers don't crash, but there is intentionally no dark variant yet.
+const LIGHT = { mode: 'light', theme: PALETTE, setMode: () => {}, toggleTheme: () => {} };
 
-const ThemeContext = createContext({
-  mode: 'dark',
-  theme: DARK_EDITORIAL_THEME,
-  toggleTheme: () => {},
-});
+const ThemeContext = createContext(LIGHT);
 
 export function ThemeProvider({ children }) {
-  const [mode] = useState('dark');
-  const theme = DARK_EDITORIAL_THEME;
-
-  return (
-    <ThemeContext.Provider value={{ mode, theme, toggleTheme: () => {} }}>
-      {children}
-    </ThemeContext.Provider>
-  );
+  return <ThemeContext.Provider value={LIGHT}>{children}</ThemeContext.Provider>;
 }
 
 export function useTheme() {
-  const context = useContext(ThemeContext);
-  if (!context) {
-    return { mode: 'dark', theme: DARK_EDITORIAL_THEME, toggleTheme: () => {} };
-  }
-  return context;
+  return useContext(ThemeContext) || LIGHT;
 }
