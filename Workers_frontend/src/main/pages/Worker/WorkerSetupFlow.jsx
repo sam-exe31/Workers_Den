@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../../theme/ThemeContext';
+import { useTheme } from '../../../Theme/ThemeContext';
 import api from '../../../api/axiosClient';
 import Logo from '../../Component/Logo';
 import { LOCALITIES } from '../../../constants/localities';
@@ -21,10 +21,10 @@ import {
 // ── Experience options ──────────────────────────────────────────────────────
 const EXPERIENCE_OPTIONS = [
   { label: 'Less than 1 year', value: 0 },
-  { label: '1–3 years',        value: 1 },
-  { label: '3–5 years',        value: 3 },
-  { label: '5–10 years',       value: 5 },
-  { label: '10+ years',        value: 10 },
+  { label: '1–3 years', value: 1 },
+  { label: '3–5 years', value: 3 },
+  { label: '5–10 years', value: 5 },
+  { label: '10+ years', value: 10 },
 ];
 
 const TOTAL_DATA_STEPS = 7; // steps 1-7 (trade → photo)
@@ -144,7 +144,7 @@ export default function WorkerSetupFlow() {
   useEffect(() => {
     api.get('/Categories')
       .then(res => setCategories(res.data || []))
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   const toggleCategory = (catId) => {
@@ -161,7 +161,7 @@ export default function WorkerSetupFlow() {
   const saveSkills = async () => {
     if (selectedCatIds.length === 0) return;
     await Promise.all(selectedCatIds.map(id =>
-      api.post('/worker/skills', { categoryId: id }).catch(() => {})
+      api.post('/worker/skills', { categoryId: id }).catch(() => { })
     ));
   };
 
@@ -180,7 +180,7 @@ export default function WorkerSetupFlow() {
   };
 
   const goBack = () => setStep(s => s - 1);
-  const skip   = () => setStep(s => s + 1);
+  const skip = () => setStep(s => s + 1);
 
   const handleFinish = async () => {
     setLoading(true);

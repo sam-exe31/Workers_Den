@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import api from '../../api/axiosClient';
-import { useTheme } from '../../theme/ThemeContext';
+import { useTheme } from '../../Theme/ThemeContext';
 import Logo from '../Component/Logo';
 import {
   ArrowRight,
@@ -30,27 +30,27 @@ import {
    Static data — fallbacks when API is offline
 ───────────────────────────────────────────── */
 const STATIC_JOBS = [
-  { name: 'AC Repair',     price: 700,  area: 'Kothrud',  timing: 'Today · 6:00 PM',     photos: 2, picked: 3, desc: "AC isn't cooling properly." },
-  { name: 'Home Cleaning', price: 1200, area: 'Baner',    timing: 'Tomorrow · 10:00 AM', photos: 4, picked: 2, desc: '2BHK deep clean before moving in.' },
-  { name: 'Catering',      price: 8500, area: 'Wakad',    timing: 'Saturday · 4:00 PM',  photos: 0, picked: 4, desc: 'Traditional snacks & setup for 40 guests.' },
-  { name: 'Electrical',    price: 600,  area: 'Hadapsar', timing: 'Today · 3:00 PM',     photos: 1, picked: 2, desc: 'Install 3 ceiling fans.' },
+  { name: 'AC Repair', price: 700, area: 'Kothrud', timing: 'Today · 6:00 PM', photos: 2, picked: 3, desc: "AC isn't cooling properly." },
+  { name: 'Home Cleaning', price: 1200, area: 'Baner', timing: 'Tomorrow · 10:00 AM', photos: 4, picked: 2, desc: '2BHK deep clean before moving in.' },
+  { name: 'Catering', price: 8500, area: 'Wakad', timing: 'Saturday · 4:00 PM', photos: 0, picked: 4, desc: 'Traditional snacks & setup for 40 guests.' },
+  { name: 'Electrical', price: 600, area: 'Hadapsar', timing: 'Today · 3:00 PM', photos: 1, picked: 2, desc: 'Install 3 ceiling fans.' },
 ];
 
 const PRO_ROLES = ['Electricians', 'Plumbers', 'Cleaners', 'Caterers', 'Photographers', 'Carpenters', 'AC Technicians', 'Painters'];
 
 const IMAGES = {
   customer: 'https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=1000&auto=format&fit=crop&q=80',
-  worker:   'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=1000&auto=format&fit=crop&q=80',
-  job:      'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=1000&auto=format&fit=crop&q=80',
+  worker: 'https://images.unsplash.com/photo-1589939705384-5185137a7f0f?w=1000&auto=format&fit=crop&q=80',
+  job: 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=1000&auto=format&fit=crop&q=80',
 };
 
 /* Trades photo strip — falls back to icon tile if a URL can't load */
 const TRADES = [
-  { label: 'Electrical', icon: Zap,        img: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=600&auto=format&fit=crop&q=80' },
-  { label: 'Plumbing',   icon: Wrench,     img: 'https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=600&auto=format&fit=crop&q=80' },
-  { label: 'Cleaning',   icon: Sparkles,   img: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=600&auto=format&fit=crop&q=80' },
-  { label: 'Carpentry',  icon: Hammer,     img: 'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=600&auto=format&fit=crop&q=80' },
-  { label: 'Painting',   icon: Paintbrush, img: 'https://images.unsplash.com/photo-1562259949-e8e7689d7828?w=600&auto=format&fit=crop&q=80' },
+  { label: 'Electrical', icon: Zap, img: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=600&auto=format&fit=crop&q=80' },
+  { label: 'Plumbing', icon: Wrench, img: 'https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=600&auto=format&fit=crop&q=80' },
+  { label: 'Cleaning', icon: Sparkles, img: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=600&auto=format&fit=crop&q=80' },
+  { label: 'Carpentry', icon: Hammer, img: 'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=600&auto=format&fit=crop&q=80' },
+  { label: 'Painting', icon: Paintbrush, img: 'https://images.unsplash.com/photo-1562259949-e8e7689d7828?w=600&auto=format&fit=crop&q=80' },
 ];
 
 /* Reviews — each opens a dialog: job context + photos + full write-up */
@@ -111,7 +111,7 @@ const staggerContainer = {
 };
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
-  show:   { opacity: 1, y: 0, transition: { duration: 0.6, ease: EASE } },
+  show: { opacity: 1, y: 0, transition: { duration: 0.6, ease: EASE } },
 };
 
 /* ─────────────────────────────────────────────
@@ -170,9 +170,9 @@ function StarRow({ rating, t, size = 13 }) {
 function TopBar({ t, navigate }) {
   const links = [
     { label: 'How it works', href: '#how-it-works' },
-    { label: 'Jobs',         href: '#jobs' },
-    { label: 'For workers',  href: '#for-workers' },
-    { label: 'Reviews',      href: '#reviews' },
+    { label: 'Jobs', href: '#jobs' },
+    { label: 'For workers', href: '#for-workers' },
+    { label: 'Reviews', href: '#reviews' },
   ];
   return (
     <header className="sticky top-0 z-40 border-b" style={{ borderColor: t.border, background: t.bg }}>
@@ -304,9 +304,9 @@ function OrderSlip({ t }) {
         <div className="px-5 py-4 border-t" style={{ borderColor: t.border }}>
           <div className="flex items-center justify-between">
             {steps.map((step, i) => {
-              const isDone   = i < activeStep;
+              const isDone = i < activeStep;
               const isActive = i === activeStep;
-              const on       = isDone || isActive;
+              const on = isDone || isActive;
               return (
                 <React.Fragment key={step}>
                   <div className="flex flex-col items-center gap-1.5">
@@ -317,8 +317,8 @@ function OrderSlip({ t }) {
                       className="relative w-6 h-6 rounded-full flex items-center justify-center wd-mono text-[9px] font-bold"
                       style={{
                         background: on ? t.accent : 'transparent',
-                        color:      on ? t.accentText : t.faint,
-                        border:     on ? 'none' : `1.5px solid ${t.border}`,
+                        color: on ? t.accentText : t.faint,
+                        border: on ? 'none' : `1.5px solid ${t.border}`,
                       }}
                     >
                       {isActive && !reduce && (
@@ -534,10 +534,10 @@ function ReviewDialog({ review, onClose, navigate, t }) {
    Page
 ───────────────────────────────────────────── */
 export default function Home() {
-  const navigate            = useNavigate();
-  const reduce              = useReducedMotion();
-  const { theme: t }        = useTheme();
-  const [jobs, setJobs]     = useState([]);
+  const navigate = useNavigate();
+  const reduce = useReducedMotion();
+  const { theme: t } = useTheme();
+  const [jobs, setJobs] = useState([]);
   const [activeReview, setActiveReview] = useState(null);
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -549,7 +549,7 @@ export default function Home() {
         const targetPath = role === 'WORKER' ? '/worker/dashboard' : '/customer/dashboard';
         navigate(targetPath, { replace: true });
         return;
-      } catch {}
+      } catch { }
     }
   }, [navigate]);
 
@@ -559,13 +559,13 @@ export default function Home() {
       .then((res) => {
         if (res.data && res.data.length > 0) {
           setJobs(res.data.map((cat, idx) => ({
-            name:   cat.catName || cat.cat_name,
-            price:  cat.customerPrice || cat.customer_price || 499,
-            area:   ['Kothrud', 'Baner', 'Wakad', 'Hadapsar', 'Aundh', 'Hinjawadi'][idx % 6],
+            name: cat.catName || cat.cat_name,
+            price: cat.customerPrice || cat.customer_price || 499,
+            area: ['Kothrud', 'Baner', 'Wakad', 'Hadapsar', 'Aundh', 'Hinjawadi'][idx % 6],
             timing: ['Today · 2:00 PM', 'Tomorrow · 10:00 AM', 'Today · 5:00 PM', 'Saturday · 11:00 AM'][idx % 4],
             photos: (idx % 3) + 1,
             picked: (idx % 3) + 1,
-            desc:   cat.description || `${cat.catName || cat.cat_name} services in Pune. Fixed pricing with verified local workers.`,
+            desc: cat.description || `${cat.catName || cat.cat_name} services in Pune. Fixed pricing with verified local workers.`,
           })));
         } else {
           setJobs(STATIC_JOBS);
@@ -574,26 +574,26 @@ export default function Home() {
       .catch(() => setJobs(STATIC_JOBS));
   }, []);
 
-  const displayJobs   = jobs.length > 0 ? jobs : STATIC_JOBS;
+  const displayJobs = jobs.length > 0 ? jobs : STATIC_JOBS;
   const [featuredJob, ...restJobs] = displayJobs;
   const secondaryJobs = restJobs.slice(0, 3);
 
-  const revealProps   = reduce ? {} : { variants: fadeUp,           initial: 'hidden', whileInView: 'show', viewport: { once: true, margin: '-80px' } };
-  const staggerProps  = reduce ? {} : { variants: staggerContainer, initial: 'hidden', whileInView: 'show', viewport: { once: true, margin: '-80px' } };
+  const revealProps = reduce ? {} : { variants: fadeUp, initial: 'hidden', whileInView: 'show', viewport: { once: true, margin: '-80px' } };
+  const staggerProps = reduce ? {} : { variants: staggerContainer, initial: 'hidden', whileInView: 'show', viewport: { once: true, margin: '-80px' } };
   const childVariants = reduce ? undefined : fadeUp;
 
   const HOW = [
-    { num: '01', title: 'Post',   desc: 'Tell us what needs doing — the job, the time, the place in Pune.', icon: Briefcase },
-    { num: '02', title: 'Pick',   desc: 'Workers nearby pick jobs that match their trade. No quote chasing.', icon: Zap },
+    { num: '01', title: 'Post', desc: 'Tell us what needs doing — the job, the time, the place in Pune.', icon: Briefcase },
+    { num: '02', title: 'Pick', desc: 'Workers nearby pick jobs that match their trade. No quote chasing.', icon: Zap },
     { num: '03', title: 'Choose', desc: "See who's interested, read their profile, and choose who gets it.", icon: Star },
-    { num: '04', title: 'Done',   desc: 'They finish on-site. You rate the work. That closes the order.', icon: Check },
+    { num: '04', title: 'Done', desc: 'They finish on-site. You rate the work. That closes the order.', icon: Check },
   ];
 
   const WHY = [
-    { icon: IndianRupee, title: 'Fixed pricing',     desc: 'The price is set per service, up front. No haggling, no surprise charge at the end.' },
-    { icon: Zap,         title: 'Fast pick-up',      desc: 'Workers nearby pick jobs that fit their skills — no waiting around for quotes.' },
+    { icon: IndianRupee, title: 'Fixed pricing', desc: 'The price is set per service, up front. No haggling, no surprise charge at the end.' },
+    { icon: Zap, title: 'Fast pick-up', desc: 'Workers nearby pick jobs that fit their skills — no waiting around for quotes.' },
     { icon: ShieldCheck, title: 'Profiles you read', desc: 'Experience, ratings and past jobs on every profile. ID checks rolling out next.' },
-    { icon: MapPin,      title: 'Pune first',        desc: 'Built on the ground in Pune — a tight local network before we go anywhere else.' },
+    { icon: MapPin, title: 'Pune first', desc: 'Built on the ground in Pune — a tight local network before we go anywhere else.' },
   ];
 
   const ELIGIBLE = [
@@ -1242,9 +1242,9 @@ export default function Home() {
                   <ul className="space-y-2.5">
                     {[
                       { label: 'How it works', href: '#how-it-works' },
-                      { label: 'Browse jobs',  href: '#jobs' },
-                      { label: 'Reviews',      href: '#reviews' },
-                      { label: 'Pricing',      href: '#jobs' },
+                      { label: 'Browse jobs', href: '#jobs' },
+                      { label: 'Reviews', href: '#reviews' },
+                      { label: 'Pricing', href: '#jobs' },
                     ].map((l) => (
                       <li key={l.label}>
                         <a
@@ -1265,10 +1265,10 @@ export default function Home() {
                   </span>
                   <ul className="space-y-2.5">
                     {[
-                      { label: 'Post a job',   href: '/register?role=CUSTOMER' },
-                      { label: 'Find work',    href: '/register?role=WORKER' },
-                      { label: 'Log in',       href: '/login' },
-                      { label: 'For workers',  href: '#for-workers' },
+                      { label: 'Post a job', href: '/register?role=CUSTOMER' },
+                      { label: 'Find work', href: '/register?role=WORKER' },
+                      { label: 'Log in', href: '/login' },
+                      { label: 'For workers', href: '#for-workers' },
                     ].map((l) => (
                       <li key={l.label}>
                         <a
@@ -1314,7 +1314,7 @@ export default function Home() {
               <div className="flex items-center gap-4">
                 {[
                   { label: 'Privacy', href: '#' },
-                  { label: 'Terms',   href: '#' },
+                  { label: 'Terms', href: '#' },
                 ].map((l) => (
                   <a
                     key={l.label}

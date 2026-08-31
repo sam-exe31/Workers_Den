@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import api from '../../api/axiosClient';
-import { useTheme } from '../../theme/ThemeContext';
+import { useTheme } from '../../Theme/ThemeContext';
 import { WorkerProvider } from '../../context/WorkerContext';
 
 /**
@@ -18,7 +18,7 @@ export default function WorkerGuard() {
   const { theme: t } = useTheme();
 
   // 'checking' | 'ok' | 'setup'
-  const [status, setStatus]               = useState('checking');
+  const [status, setStatus] = useState('checking');
   const [initialProfile, setInitialProfile] = useState(null);
 
   useEffect(() => {

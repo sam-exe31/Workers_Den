@@ -1,31 +1,31 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../../theme/ThemeContext';
+import { useTheme } from '../../../Theme/ThemeContext';
 import api from '../../../api/axiosClient';
 import WorkerNavbar from './WorkerNavbar';
 import { LOCALITIES } from '../../../constants/localities';
 import { CheckCircle2, AlertCircle, Star, ShieldCheck, Camera, Trash2, AlertTriangle, X, Upload } from 'lucide-react';
 
 export default function WorkerProfilePage() {
-  const navigate     = useNavigate();
+  const navigate = useNavigate();
   const { theme: t } = useTheme();
 
-  const [profile, setProfile]       = useState(null);
+  const [profile, setProfile] = useState(null);
   const [categories, setCategories] = useState([]);
   const [mySkillIds, setMySkillIds] = useState([]);
 
-  const [bio, setBio]               = useState('');
+  const [bio, setBio] = useState('');
   const [experience, setExperience] = useState(0);
-  const [locality, setLocality]     = useState(LOCALITIES[0]);
+  const [locality, setLocality] = useState(LOCALITIES[0]);
   const [maxCapacity, setMaxCapacity] = useState(2);
   const [isAvailable, setIsAvailable] = useState(true);
   const [profileImage, setProfileImage] = useState('');
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
 
-  const [saving, setSaving]       = useState(false);
+  const [saving, setSaving] = useState(false);
   const [skillBusy, setSkillBusy] = useState(null);
-  const [error, setError]         = useState('');
-  const [success, setSuccess]     = useState('');
+  const [error, setError] = useState('');
+  const [success, setSuccess] = useState('');
 
   // Delete modal state
   const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -467,16 +467,16 @@ export default function WorkerProfilePage() {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
               {categories.map(c => {
                 const isSelected = mySkillIds.includes(c.id);
-                const busy       = skillBusy === c.id;
+                const busy = skillBusy === c.id;
                 return (
                   <div
                     key={c.id}
                     onClick={() => !busy && toggleCategory(c.id)}
                     className="p-4 border flex items-center justify-between cursor-pointer transition-all"
                     style={{
-                      background:   isSelected ? t.accentSoft : t.surface,
-                      borderColor:  isSelected ? t.accent : t.border,
-                      opacity:      busy ? 0.5 : 1,
+                      background: isSelected ? t.accentSoft : t.surface,
+                      borderColor: isSelected ? t.accent : t.border,
+                      opacity: busy ? 0.5 : 1,
                     }}
                   >
                     <div>

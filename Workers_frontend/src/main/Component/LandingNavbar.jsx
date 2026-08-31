@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../theme/ThemeContext'; // Adjust path if needed
-import { ArrowRight, Menu, X, Wrench, GitCommit, Users2,BookOpen } from 'lucide-react';
+import { useTheme } from '../../Theme/ThemeContext'; // Adjust path if needed
+import { ArrowRight, Menu, X, Wrench, GitCommit, Users2, BookOpen } from 'lucide-react';
 import Logo from './Logo';
 
 export default function LandingNavbar() {
@@ -72,13 +72,13 @@ export default function LandingNavbar() {
       }}
     >
       <div className="w-full px-4 sm:px-8 lg:px-12 h-16 flex items-center justify-between">
-        
+
         <div
           onClick={() => navigate('/')}
           className="flex items-center gap-3 cursor-pointer select-none group"
         >
-          <Logo className="flex items-center justify-center transition-transform duration-150 group-hover:scale-95 shadow-sm"/>
-          
+          <Logo className="flex items-center justify-center transition-transform duration-150 group-hover:scale-95 shadow-sm" />
+
 
           <div className="flex flex-col">
             <span
@@ -93,7 +93,7 @@ export default function LandingNavbar() {
         </div>
 
         <nav className="hidden md:flex items-center gap-2.5 wd-mono text-xs">
-          {navLinks.map(({ label, href, Icon, About}) => (
+          {navLinks.map(({ label, href, Icon, About }) => (
             <a
               key={label}
               href={href}
@@ -229,15 +229,15 @@ export default function LandingNavbar() {
                 href={href}
                 onClick={() => setMobileMenuOpen(false)}
                 onMouseEnter={(e) => Object.assign(e.currentTarget.style, {
-                      borderColor: t.accent,
-                      background: t.accentSoft,
-                      color: t.accent
-                    })}
-                    onMouseLeave={(e) => Object.assign(e.currentTarget.style, {
-                      borderColor: t.border,
-                      background: mode === 'light' ? 'rgba(251, 250, 252, 0.6)' : 'rgba(23, 29, 42, 0.6)',
-                      color: t.text
-                    })}
+                  borderColor: t.accent,
+                  background: t.accentSoft,
+                  color: t.accent
+                })}
+                onMouseLeave={(e) => Object.assign(e.currentTarget.style, {
+                  borderColor: t.border,
+                  background: mode === 'light' ? 'rgba(251, 250, 252, 0.6)' : 'rgba(23, 29, 42, 0.6)',
+                  color: t.text
+                })}
                 className="py-2.5 px-3 border font-semibold flex items-center justify-between"
                 style={{ borderColor: t.border, color: t.text }}
               >

@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../../theme/ThemeContext';
+import { useTheme } from '../../../Theme/ThemeContext';
 import api from '../../../api/axiosClient';
 import CustomerNavbar from './CustomerNavbar';
 import { filterOutDeletedRequests } from '../../../utils/deletedRequests';
@@ -146,7 +146,7 @@ export default function CustomerDashboard() {
           localStorage.setItem('user', JSON.stringify(updated));
         }
       })
-      .catch(() => {});
+      .catch(() => { });
   }, []);
 
   const displayName = currentUser?.fullName || currentUser?.user_name || currentUser?.email || 'there';

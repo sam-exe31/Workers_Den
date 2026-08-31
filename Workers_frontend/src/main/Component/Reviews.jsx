@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Star, Send } from 'lucide-react';
-import { useTheme } from '../../theme/ThemeContext';
+import { useTheme } from '../../Theme/ThemeContext';
 import api from '../../api/axiosClient';
 
 export function StarRating({ value = 0, size = 14, interactive = false, onChange }) {

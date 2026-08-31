@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../../theme/ThemeContext';
+import { useTheme } from '../../../Theme/ThemeContext';
 import api from '../../../api/axiosClient';
 import WorkerNavbar from './WorkerNavbar';
 import { TrendingUp, CheckCircle2, IndianRupee } from 'lucide-react';
@@ -27,14 +27,14 @@ export default function WorkerEarningsPage() {
     api
       .get('/jobs/worker/my-jobs')
       .then(res => setJobs(res.data || []))
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setLoading(false));
   }, []);
 
   const completedJobs = jobs.filter(j => j.status === 'COMPLETED');
 
-  const totalEarnings   = completedJobs.reduce((sum, j) => sum + (j.workerPayout || 0), 0);
-  const monthlyJobs     = completedJobs.filter(j => isThisMonth(j.preferredDate));
+  const totalEarnings = completedJobs.reduce((sum, j) => sum + (j.workerPayout || 0), 0);
+  const monthlyJobs = completedJobs.filter(j => isThisMonth(j.preferredDate));
   const monthlyEarnings = monthlyJobs.reduce((sum, j) => sum + (j.workerPayout || 0), 0);
 
   const now = new Date();

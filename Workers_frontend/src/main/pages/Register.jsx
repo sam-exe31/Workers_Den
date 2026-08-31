@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import axiosClient from '../../api/axiosClient';
-import { useTheme } from '../../theme/ThemeContext';
+import { useTheme } from '../../Theme/ThemeContext';
 import Logo from '../Component/Logo';
 import { Eye, EyeOff, ArrowLeft, ArrowRight, AlertCircle } from 'lucide-react';
 
@@ -29,7 +29,7 @@ export default function Register() {
         const role = u?.role ? u.role.replace('ROLE_', '') : '';
         const targetPath = role === 'WORKER' ? '/worker/dashboard' : '/customer/dashboard';
         navigate(targetPath, { replace: true });
-      } catch {}
+      } catch { }
     }
   }, [navigate]);
 

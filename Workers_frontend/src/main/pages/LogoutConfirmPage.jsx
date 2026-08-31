@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../theme/ThemeContext';
+import { useTheme } from '../../Theme/ThemeContext';
 import Logo from '../Component/Logo';
 import { LogOut, ArrowLeft, ShieldAlert, CheckCircle2 } from 'lucide-react';
 

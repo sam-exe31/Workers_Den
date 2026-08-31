@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../../theme/ThemeContext';
+import { useTheme } from '../../../Theme/ThemeContext';
 import api from '../../../api/axiosClient';
 import WorkerNavbar from './WorkerNavbar';
 import { MapPin, Clock, Phone, Play, CheckSquare, Briefcase } from 'lucide-react';
@@ -20,7 +20,7 @@ export default function WorkerMyJobsPage() {
     api
       .get('/jobs/worker/my-jobs')
       .then(res => setJobs(res.data || []))
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => setLoading(false));
   };
 
@@ -38,9 +38,9 @@ export default function WorkerMyJobsPage() {
     }
   };
 
-  const upcomingJobs   = jobs.filter(j => j.status === 'ACCEPTED');
-  const activeJobs     = jobs.filter(j => j.status === 'IN_PROGRESS');
-  const completedJobs  = jobs.filter(j => j.status === 'COMPLETED');
+  const upcomingJobs = jobs.filter(j => j.status === 'ACCEPTED');
+  const activeJobs = jobs.filter(j => j.status === 'IN_PROGRESS');
+  const completedJobs = jobs.filter(j => j.status === 'COMPLETED');
 
   const tabMap = { Upcoming: upcomingJobs, Active: activeJobs, Completed: completedJobs };
   const displayed = tabMap[activeTab] || [];
@@ -133,21 +133,21 @@ export default function WorkerMyJobsPage() {
                       style={{
                         background:
                           job.status === 'IN_PROGRESS' ? 'rgba(183,121,31,0.10)' :
-                          job.status === 'COMPLETED'   ? 'rgba(47,125,79,0.08)' :
-                          t.accentSoft,
+                            job.status === 'COMPLETED' ? 'rgba(47,125,79,0.08)' :
+                              t.accentSoft,
                         borderColor:
                           job.status === 'IN_PROGRESS' ? t.warning :
-                          job.status === 'COMPLETED'   ? t.success :
-                          t.accent,
+                            job.status === 'COMPLETED' ? t.success :
+                              t.accent,
                         color:
                           job.status === 'IN_PROGRESS' ? t.warning :
-                          job.status === 'COMPLETED'   ? t.success :
-                          t.accent,
+                            job.status === 'COMPLETED' ? t.success :
+                              t.accent,
                       }}
                     >
-                      {job.status === 'ACCEPTED'    ? 'Accepted — starting soon' :
-                       job.status === 'IN_PROGRESS' ? 'In progress' :
-                       job.status === 'COMPLETED'   ? 'Completed' : job.status}
+                      {job.status === 'ACCEPTED' ? 'Accepted — starting soon' :
+                        job.status === 'IN_PROGRESS' ? 'In progress' :
+                          job.status === 'COMPLETED' ? 'Completed' : job.status}
                     </span>
 
                     <h3 className="wd-display font-black text-base" style={{ color: t.text }}>
