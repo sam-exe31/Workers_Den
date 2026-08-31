@@ -23,6 +23,7 @@ public class CategoryServices {
                 .description(dto.getDescription())
                 .customerPrice(dto.getCustomerPrice())
                 .workerPayout(dto.getWorkerPayout())
+                .imageUrl(dto.getImageUrl())
                 .isActive(dto.getIsActive() != null ? dto.getIsActive() : true)
                 .build();
         return mapToDTO(categoryRepository.save(category));
@@ -47,6 +48,7 @@ public class CategoryServices {
         category.setDescription(dto.getDescription());
         category.setCustomerPrice(dto.getCustomerPrice());
         category.setWorkerPayout(dto.getWorkerPayout());
+        if (dto.getImageUrl() != null) category.setImageUrl(dto.getImageUrl());
         if (dto.getIsActive() != null) category.setIsActive(dto.getIsActive());
         return mapToDTO(categoryRepository.save(category));
     }
@@ -58,6 +60,7 @@ public class CategoryServices {
                 .description(category.getDescription())
                 .customerPrice(category.getCustomerPrice())
                 .workerPayout(category.getWorkerPayout())
+                .imageUrl(category.getImageUrl())
                 .isActive(category.getIsActive())
                 .build();
     }

@@ -13,5 +13,6 @@ public class CategoryResponseDTO {
     private String description;
     private Double customerPrice;
     private Double workerPayout;
+    private String imageUrl;
     private Boolean isActive;
 }

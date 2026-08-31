@@ -23,5 +23,7 @@ public class CategoryRequestDTO {
     @Min(value = 0, message = "Payout cannot be negative")
     private Double workerPayout;
 
+    private String imageUrl;
+
     private Boolean isActive;
 }

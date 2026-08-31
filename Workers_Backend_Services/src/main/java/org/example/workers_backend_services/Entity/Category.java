@@ -29,6 +29,9 @@ public class Category {
     @Column(name = "worker_payout", nullable = false)
     private Double workerPayout;
 
+    @Column(name = "image_url", length = 1000)
+    private String imageUrl;
+
     @Builder.Default
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
