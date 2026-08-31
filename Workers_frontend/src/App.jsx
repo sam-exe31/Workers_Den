@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-d
 import ProtectedRoute from './main/Component/ProtectedRoute';
 import WorkerGuard from './main/Component/WorkerGuard';
 import ErrorBoundary from './main/Component/ErrorBoundary';
-import { ThemeProvider } from './theme/ThemeContext';
+import { ThemeProvider } from './theme/ThemeContext.jsx';
 import { PALETTE} from './theme/palette.js';
 
 import Home from './main/pages/Home';
