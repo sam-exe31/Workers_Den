@@ -64,7 +64,6 @@ const REVIEWS = [
     full: 'Posted the job at 4pm and a technician picked it up within the hour. He was at my place by 6, found a gas leak and cleaned the coils, and showed me exactly what was wrong. The price was the fixed one from the app — not a rupee more. Cooling like new.',
     photos: [
       'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=700&auto=format&fit=crop&q=80',
-      'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=700&auto=format&fit=crop&q=80',
     ],
   },
   {
@@ -75,7 +74,7 @@ const REVIEWS = [
     short: 'Two people, three hours, spotless. Worth every rupee.',
     full: 'We were moving into a flat that had been empty for months. The team came prepared with their own supplies, did the kitchen and bathrooms first like I asked, and sent photos before and after. Booking was one message and the price was set up front.',
     photos: [
-      'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=700&auto=format&fit=crop&q=80',
+      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTnfqZH880QzE7F4sGmDxU4LhBC6F0ojk1bmcxTHhTbrw&s=10',
     ],
   },
   {
@@ -83,10 +82,10 @@ const REVIEWS = [
     name: 'Amit Patil', initials: 'AP', locality: 'Wakad',
     service: 'Catering', jobTitle: 'Snacks & setup for 40 guests',
     rating: 4, date: 'Jul 2026',
-    short: 'Food was great and on time. Setup ran a little late.',
-    full: 'Ordered traditional snacks for a house function. The taste and quantity were spot on and everyone asked who catered it. Only reason it is four stars and not five is the setup started about 20 minutes late — but they made it up by finishing fast.',
+    short: 'Just the person was good and as a recruter he was deciplined well',
+    full: 'we were short of people so i orderd one person to make us easy great to work with ',
     photos: [
-      'https://images.unsplash.com/photo-1555939594-58d7cb561ad1?w=700&auto=format&fit=crop&q=80',
+      'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQUrybvyamINedjcl5IHFPi-rpTgMafpUmOQiE_tS7xGg&s=10',
     ],
   },
   {
@@ -167,9 +166,7 @@ function StarRow({ rating, t, size = 13 }) {
   );
 }
 
-/* ─────────────────────────────────────────────
-   Top navigation bar
-───────────────────────────────────────────── */
+
 function TopBar({ t, navigate }) {
   const links = [
     { label: 'How it works', href: '#how-it-works' },
@@ -544,17 +541,18 @@ export default function Home() {
   const [activeReview, setActiveReview] = useState(null);
 
   useEffect(() => {
+    // Fetch live categories from DB
     api.get('/Categories')
       .then((res) => {
         if (res.data && res.data.length > 0) {
           setJobs(res.data.map((cat, idx) => ({
-            name:   cat.catName,
-            price:  cat.customerPrice || 500,
-            area:   ['Kothrud', 'Baner', 'Wakad', 'Hadapsar'][idx % 4],
+            name:   cat.catName || cat.cat_name,
+            price:  cat.customerPrice || cat.customer_price || 499,
+            area:   ['Kothrud', 'Baner', 'Wakad', 'Hadapsar', 'Aundh', 'Hinjawadi'][idx % 6],
             timing: ['Today · 2:00 PM', 'Tomorrow · 10:00 AM', 'Today · 5:00 PM', 'Saturday · 11:00 AM'][idx % 4],
-            photos: idx % 3,
+            photos: (idx % 3) + 1,
             picked: (idx % 3) + 1,
-            desc:   `${cat.catName} job across Pune. Quick pick-up by nearby workers.`,
+            desc:   cat.description || `${cat.catName || cat.cat_name} services in Pune. Fixed pricing with verified local workers.`,
           })));
         } else {
           setJobs(STATIC_JOBS);

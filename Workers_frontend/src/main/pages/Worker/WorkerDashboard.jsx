@@ -1,311 +1,543 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../../theme/ThemeContext';
+import { useWorker } from '../../../context/WorkerContext';
 import api from '../../../api/axiosClient';
-import WorkerNavbar from '../Worker/WorkerNavbar';
-import { 
-  Search, 
-  MapPin, 
-  Clock, 
-  Star, 
-  Layers, 
-  Play, 
-  CheckSquare, 
-  Phone, 
-  ArrowRight, 
-  Radio, 
-  AlertCircle 
+import WorkerNavbar from './WorkerNavbar';
+import {
+  MapPin,
+  Clock,
+  Star,
+  ArrowRight,
+  Play,
+  CheckSquare,
+  Phone,
+  SlidersHorizontal,
+  ChevronDown,
+  Zap,
 } from 'lucide-react';
 
-export default function WorkerDashboard() {
-  const navigate = useNavigate();
-  const { mode, theme: t } = useTheme();
+// ── Helpers ─────────────────────────────────────────────────────────────────
 
-  const [profile, setProfile] = useState(null);
+function timeGreeting() {
+  const h = new Date().getHours();
+  if (h < 12) return 'Good morning';
+  if (h < 17) return 'Good afternoon';
+  return 'Good evening';
+}
+
+function sortJobs(jobs, sortKey) {
+  switch (sortKey) {
+    case 'payout':
+      return [...jobs].sort((a, b) => (b.workerPayout || 0) - (a.workerPayout || 0));
+    case 'newest':
+      return [...jobs].sort((a, b) => (b.requestId || 0) - (a.requestId || 0));
+    default:
+      return jobs; // 'recommended' = server order
+  }
+}
+
+// ── Stat card ────────────────────────────────────────────────────────────────
+function StatCard({ label, value, sub, color, t }) {
+  return (
+    <div className="border p-5 flex flex-col gap-1" style={{ background: t.surface, borderColor: t.border }}>
+      <span className="wd-mono text-[10px] uppercase tracking-wider" style={{ color: t.muted }}>{label}</span>
+      <span className="wd-display font-black text-2xl" style={{ color: color || t.text }}>{value}</span>
+      {sub && <span className="wd-mono text-[11px]" style={{ color: t.muted }}>{sub}</span>}
+    </div>
+  );
+}
+
+// ── Job card ─────────────────────────────────────────────────────────────────
+function JobCard({ job, profile, onView, t }) {
+  const catName = job.categoryName || job.catName || job.cat_name;
+  const matchesTrade = catName && profile?.locality;
+
+  return (
+    <div
+      className="border p-5 flex flex-col sm:flex-row gap-4 sm:items-start hover:border-opacity-80 transition-all"
+      style={{ background: t.surface, borderColor: t.border }}
+    >
+      {/* Left: job info */}
+      <div className="flex-1 min-w-0 space-y-2">
+        <div className="flex items-center gap-2 flex-wrap">
+          {catName && (
+            <span className="wd-mono text-[10px] font-bold px-2 py-0.5 border" style={{ borderColor: t.border, color: t.muted }}>
+              {catName}
+            </span>
+          )}
+          {job.urgency === 'HIGH' && (
+            <span
+              className="wd-mono text-[10px] font-bold px-2 py-0.5 border"
+              style={{ borderColor: '#DC2626', color: '#DC2626', background: 'rgba(220,38,38,0.06)' }}
+            >
+              Urgent
+            </span>
+          )}
+        </div>
+
+        <div className="wd-display font-black text-base" style={{ color: t.text }}>
+          {job.title}
+        </div>
+
+        {job.description && (
+          <p className="text-sm leading-relaxed line-clamp-2" style={{ color: t.muted }}>
+            {job.description}
+          </p>
+        )}
+
+        <div className="wd-mono text-xs flex flex-wrap gap-x-4 gap-y-1" style={{ color: t.muted }}>
+          <span className="flex items-center gap-1.5">
+            <MapPin size={11} style={{ color: t.accent }} />
+            {job.locality}
+          </span>
+          <span className="flex items-center gap-1.5">
+            <Clock size={11} style={{ color: t.accent }} />
+            {job.preferredDate}{job.preferredTime ? ` · ${job.preferredTime}` : ''}
+          </span>
+        </div>
+      </div>
+
+      {/* Right: payout + action */}
+      <div className="flex sm:flex-col items-center sm:items-end justify-between gap-3 shrink-0">
+        <div className="text-right">
+          <div className="wd-mono text-[10px]" style={{ color: t.muted }}>Payout</div>
+          <div className="wd-display font-black text-xl" style={{ color: t.success }}>
+            ₹{job.workerPayout}
+          </div>
+        </div>
+        <button
+          type="button"
+          onClick={() => onView(job.requestId)}
+          className="wd-mono wd-btn text-xs font-bold px-4 py-2.5 flex items-center gap-1.5 cursor-pointer"
+          style={{ background: t.accent, color: t.accentText, border: 'none' }}
+        >
+          View job <ArrowRight size={12} />
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ── Active job strip ─────────────────────────────────────────────────────────
+function ActiveJobStrip({ job, onAction, actionLoading, t }) {
+  const isInProgress = job.status === 'IN_PROGRESS';
+  return (
+    <div
+      className="border p-5 flex flex-col sm:flex-row sm:items-center justify-between gap-4"
+      style={{
+        background: isInProgress ? 'rgba(183,121,31,0.06)' : t.accentSoft,
+        borderColor: isInProgress ? t.warning : t.accent,
+      }}
+    >
+      <div className="flex-1 min-w-0">
+        <div className="flex items-center gap-2 mb-1">
+          <span
+            className="wd-mono text-[10px] font-bold px-2 py-0.5 border"
+            style={{
+              borderColor: isInProgress ? t.warning : t.accent,
+              color: isInProgress ? t.warning : t.accent,
+            }}
+          >
+            {isInProgress ? 'In progress' : 'Accepted'}
+          </span>
+          <span className="wd-mono text-[10px]" style={{ color: t.muted }}>Your current job</span>
+        </div>
+        <div className="wd-display font-black text-base" style={{ color: t.text }}>{job.title}</div>
+        <div className="wd-mono text-xs flex gap-4 mt-1" style={{ color: t.muted }}>
+          <span className="flex items-center gap-1.5">
+            <MapPin size={11} style={{ color: t.accent }} /> {job.locality}
+          </span>
+          {job.customerName && (
+            <span className="flex items-center gap-1.5">
+              <Phone size={11} style={{ color: t.accent }} /> {job.customerName}
+            </span>
+          )}
+        </div>
+      </div>
+      <div className="flex items-center gap-3 shrink-0">
+        <div className="wd-display font-black text-lg" style={{ color: t.success }}>₹{job.workerPayout}</div>
+        {!isInProgress ? (
+          <button
+            type="button"
+            disabled={actionLoading === job.requestId}
+            onClick={() => onAction(job.requestId, 'start')}
+            className="wd-mono wd-btn text-xs font-bold px-4 py-2.5 flex items-center gap-1.5 cursor-pointer disabled:opacity-40"
+            style={{ background: t.warning, color: '#fff', border: 'none' }}
+          >
+            <Play size={12} />
+            {actionLoading === job.requestId ? 'Starting…' : 'Start work'}
+          </button>
+        ) : (
+          <button
+            type="button"
+            disabled={actionLoading === job.requestId}
+            onClick={() => onAction(job.requestId, 'complete')}
+            className="wd-mono wd-btn text-xs font-bold px-4 py-2.5 flex items-center gap-1.5 cursor-pointer disabled:opacity-40"
+            style={{ background: t.success, color: '#fff', border: 'none' }}
+          >
+            <CheckSquare size={12} />
+            {actionLoading === job.requestId ? 'Completing…' : 'Mark complete'}
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Main dashboard ────────────────────────────────────────────────────────────
+export default function WorkerDashboard() {
+  const navigate       = useNavigate();
+  const { theme: t }  = useTheme();
+
+  // ── shared profile from WorkerGuard context ────────────────────────────
+  // toggleAvailability from context updates both the Navbar and the Dashboard.
+  const { profile, toggleAvailability } = useWorker();
+
   const [availableJobs, setAvailableJobs] = useState([]);
-  const [myJobs, setMyJobs] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [myJobs, setMyJobs]               = useState([]);
+  const [loading, setLoading]             = useState(true);
   const [actionLoading, setActionLoading] = useState(null);
 
-  const rawUser = localStorage.getItem('user');
-  const user = rawUser ? JSON.parse(rawUser) : null;
+  // Filter / sort state
+  const [areaTab, setAreaTab]   = useState('myArea');
+  const [sortKey, setSortKey]   = useState('recommended');
+  const [showSort, setShowSort] = useState(false);
 
-  const loadDashboardData = () => {
+  const rawUser   = localStorage.getItem('user');
+  const user      = rawUser ? JSON.parse(rawUser) : null;
+  const firstName = user?.fullName?.split(' ')[0] || profile?.userName || 'there';
+
+  const load = () => {
     Promise.all([
-      api.get('/workers/me'),
       api.get('/jobs/worker/available'),
       api.get('/jobs/worker/my-jobs'),
     ])
-      .then(([profRes, availRes, myRes]) => {
-        setProfile(profRes.data);
+      .then(([availRes, myRes]) => {
         setAvailableJobs(availRes.data || []);
         setMyJobs(myRes.data || []);
       })
-      .catch((err) => {
-        console.error('Data sync failed', err);
-      })
+      .catch(err => console.error('Dashboard load failed', err))
       .finally(() => setLoading(false));
   };
 
-  useEffect(() => {
-    loadDashboardData();
-  }, []);
+  useEffect(() => { load(); }, []);
 
-  const handleJobAction = async (jobId, action) => {
+  // ── Derived state ──────────────────────────────────────────────────────────
+
+  const activeTasks    = myJobs.filter(j => j.status === 'ACCEPTED' || j.status === 'IN_PROGRESS');
+  const completedJobs  = myJobs.filter(j => j.status === 'COMPLETED');
+  const recentWork     = [...completedJobs].reverse().slice(0, 5);
+
+  const totalEarnings  = completedJobs.reduce((s, j) => s + (j.workerPayout || 0), 0);
+
+  // Area filter
+  const filteredJobs = useMemo(() => {
+    let base = availableJobs;
+    if (areaTab === 'myArea' && profile?.locality) {
+      base = base.filter(j => j.locality === profile.locality);
+    }
+    return sortJobs(base, sortKey);
+  }, [availableJobs, areaTab, sortKey, profile]);
+
+  // ── Job action ─────────────────────────────────────────────────────────────
+  const handleAction = async (jobId, action) => {
     setActionLoading(jobId);
     try {
       await api.post(`/jobs/${jobId}/${action}`);
-      loadDashboardData();
+      load();
     } catch (err) {
-      alert(err.response?.data?.message || `Failed to ${action} job.`);
+      alert(err.response?.data?.message || `Could not ${action} job.`);
     } finally {
       setActionLoading(null);
     }
   };
 
-  // In-flight active orders: ACCEPTED or IN_PROGRESS
-  const activeTasks = myJobs.filter((j) => j.status === 'ACCEPTED' || j.status === 'IN_PROGRESS');
-  const completedJobs = myJobs.filter((j) => j.status === 'COMPLETED');
+  // ── Availability toggle (delegates to context — updates Navbar too) ──────
+  // toggleAvailability comes from useWorker() above — no separate impl needed.
 
+  const SORT_LABELS = { recommended: 'Recommended', payout: 'Highest payout', newest: 'Newest first' };
+
+  // ── Render ─────────────────────────────────────────────────────────────────
   return (
-    <div
-      style={{ background: t.bg, color: t.text }}
-      className="min-h-screen flex flex-col font-sans transition-colors duration-150"
-    >
+    <div style={{ background: t.bg, color: t.text }} className="min-h-screen flex flex-col font-sans">
       <WorkerNavbar />
 
-      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-8 py-8 space-y-10">
-        
-        {/* ─── 1. Header Telemetry & Capacity Strip ─── */}
+      <main className="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-8 py-8 space-y-8">
+
+        {/* ── 1. Header ── */}
         <section
-          className="border p-6 sm:p-8 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6"
+          className="border p-6 sm:p-8 flex flex-col sm:flex-row sm:items-center justify-between gap-5"
           style={{ background: t.surface, borderColor: t.border }}
         >
           <div>
-            <div className="wd-mono text-[10px] font-bold uppercase tracking-wider flex items-center gap-2 mb-1" style={{ color: t.accent }}>
-              <span className="w-2 h-2 rounded-full inline-block" style={{ background: t.accent }} />
-              OPERATOR TELEMETRY // ACTIVE WORKSTATION
+            <div className="wd-mono text-[10px] uppercase tracking-widest mb-1" style={{ color: t.muted }}>
+              {timeGreeting()}
             </div>
-            <h1 className="wd-display font-black text-2xl sm:text-3xl uppercase tracking-tight" style={{ color: t.text }}>
-              Foreman Console: {user?.fullName || profile?.userName || 'Operator'}
+            <h1 className="wd-display font-black text-2xl sm:text-3xl tracking-tight" style={{ color: t.text }}>
+              {firstName}
             </h1>
-            <p className="text-xs wd-mono mt-1" style={{ color: t.muted }}>
-              Assigned Sector: <strong style={{ color: t.text }}>{profile?.locality || 'Pune (Unassigned)'}</strong> • 
-              Status: <span style={{ color: profile?.isAvailable ? '#10B981' : '#EF4444' }}>{profile?.isAvailable ? 'STANDBY_READY' : 'PAUSED'}</span>
-            </p>
-          </div>
+            <div className="flex items-center gap-3 mt-2 flex-wrap">
+              {/* Availability badge */}
+              <span
+                className="flex items-center gap-1.5 wd-mono text-xs font-bold"
+                style={{ color: profile?.isAvailable ? t.success : t.muted }}
+              >
+                <span className="w-2 h-2 rounded-full" style={{ background: profile?.isAvailable ? t.success : t.muted }} />
+                {profile?.isAvailable ? 'Available' : 'Offline'}
+              </span>
 
-          {/* Quick Metrics Badges */}
-          <div className="flex flex-wrap items-center gap-3 wd-mono text-xs">
-            <div className="border p-3 min-w-[100px] text-center" style={{ borderColor: t.border, background: t.cardHover }}>
-              <span className="text-[10px] block" style={{ color: t.muted }}>CAPACITY</span>
-              <strong className="text-sm" style={{ color: t.text }}>
-                {activeTasks.length} / {profile?.maxCapacity || 3}
-              </strong>
+              {profile?.locality && (
+                <>
+                  <span style={{ color: t.border }}>·</span>
+                  <span className="wd-mono text-xs flex items-center gap-1" style={{ color: t.muted }}>
+                    <MapPin size={11} style={{ color: t.accent }} />
+                    {profile.locality}
+                  </span>
+                </>
+              )}
             </div>
-
-            <div className="border p-3 min-w-[100px] text-center" style={{ borderColor: t.border, background: t.cardHover }}>
-              <span className="text-[10px] block" style={{ color: t.muted }}>RATING</span>
-              <strong className="text-sm flex items-center justify-center gap-1" style={{ color: '#F59E0B' }}>
-                <Star size={12} className="fill-current" /> {profile?.rating || '0.0'}
-              </strong>
-            </div>
-
-            <div className="border p-3 min-w-[100px] text-center" style={{ borderColor: t.border, background: t.cardHover }}>
-              <span className="text-[10px] block" style={{ color: t.muted }}>CLOSED</span>
-              <strong className="text-sm" style={{ color: t.text }}>
-                {profile?.completedJobs || completedJobs.length} JOBS
-              </strong>
-            </div>
-          </div>
-        </section>
-
-        {/* ─── 2. Discovery Hero Banner (Direct Action) ─── */}
-        <section
-          onClick={() => navigate('/worker/find-jobs')}
-          className="border p-6 sm:p-7 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 cursor-pointer transition-all duration-150 hover:-translate-y-0.5 group shadow-xs select-none"
-          style={{
-            background: t.surface,
-            borderColor: availableJobs.length > 0 ? t.accent : t.border,
-          }}
-        >
-          <div className="space-y-1">
-            <span
-              className="wd-mono text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 border inline-block"
-              style={{ borderColor: t.border, color: t.accent, background: t.accentSoft }}
-            >
-              SECTOR FEED
-            </span>
-            <h2 className="wd-display font-black text-xl sm:text-2xl uppercase tracking-tight" style={{ color: t.text }}>
-              🔥 {availableJobs.length} Work Orders Available Near You
-            </h2>
-            <p className="text-xs wd-mono" style={{ color: t.muted }}>
-              Matching trade skills in {profile?.locality || 'your assigned area'}. Direct claim with guaranteed payout.
-            </p>
           </div>
 
           <button
             type="button"
-            className="wd-mono wd-btn text-xs font-bold px-5 py-3 flex items-center gap-2 cursor-pointer whitespace-nowrap"
+            onClick={toggleAvailability}
+            className="wd-mono wd-btn text-xs font-bold px-5 py-2.5 border cursor-pointer self-start sm:self-auto"
             style={{
-              background: t.accent,
-              color: t.accentText,
-              border: 'none',
+              borderColor: profile?.isAvailable ? t.muted : t.success,
+              color: profile?.isAvailable ? t.muted : t.success,
+              background: 'transparent',
             }}
           >
-            INSPECT OPEN JOBS <ArrowRight size={14} />
+            {profile?.isAvailable ? 'Go offline' : 'Go online'}
           </button>
         </section>
 
-        {/* ─── 3. In-Flight Assigned Tasks ─── */}
-        <section className="space-y-4">
-          <div className="flex justify-between items-baseline border-b pb-3" style={{ borderColor: t.border }}>
-            <div className="flex items-center gap-2">
-              <span className="wd-mono text-xs font-bold" style={{ color: t.accent }}>01 //</span>
-              <h2 className="wd-display font-black text-lg uppercase tracking-tight" style={{ color: t.text }}>
-                Active Claimed Tickets ({activeTasks.length})
+        {/* ── 2. Stats row ── */}
+        {!loading && (
+          <section className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <StatCard
+              label="Earnings"
+              value={`₹${totalEarnings.toLocaleString('en-IN')}`}
+              sub="From completed work"
+              color={t.success}
+              t={t}
+            />
+            <StatCard
+              label="Jobs completed"
+              value={profile?.completedJobs ?? completedJobs.length}
+              sub="Total"
+              t={t}
+            />
+            <StatCard
+              label="Rating"
+              value={
+                profile?.rating && profile.rating > 0
+                  ? `★ ${profile.rating}`
+                  : 'New worker'
+              }
+              sub={profile?.rating > 0 ? 'Customer rating' : 'No ratings yet'}
+              color={profile?.rating > 0 ? '#D97706' : t.muted}
+              t={t}
+            />
+          </section>
+        )}
+
+        {/* ── 3. Active job strip ── */}
+        {activeTasks.length > 0 && (
+          <section className="space-y-3">
+            <div className="flex items-baseline gap-2 border-b pb-3" style={{ borderColor: t.border }}>
+              <h2 className="wd-display font-black text-lg tracking-tight" style={{ color: t.text }}>
+                Current job
               </h2>
+              <span className="wd-mono text-xs" style={{ color: t.muted }}>
+                {activeTasks.length} active
+              </span>
             </div>
-            <span className="wd-mono text-xs" style={{ color: t.muted }}>LIFECYCLE CONTROLS</span>
+            {activeTasks.map(job => (
+              <ActiveJobStrip
+                key={job.requestId}
+                job={job}
+                onAction={handleAction}
+                actionLoading={actionLoading}
+                t={t}
+              />
+            ))}
+          </section>
+        )}
+
+        {/* ── 4. Available Work ── */}
+        <section className="space-y-4">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b pb-3" style={{ borderColor: t.border }}>
+            <div>
+              <h2 className="wd-display font-black text-lg tracking-tight" style={{ color: t.text }}>
+                Available Work
+              </h2>
+              <p className="wd-mono text-xs mt-0.5" style={{ color: t.muted }}>
+                Jobs matching your skills and preferences.
+              </p>
+            </div>
+            <span className="wd-mono text-xs font-bold" style={{ color: t.accent }}>
+              {filteredJobs.length} job{filteredJobs.length !== 1 ? 's' : ''}
+            </span>
           </div>
 
-          {activeTasks.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {activeTasks.map((job) => (
-                <div
-                  key={job.requestId}
-                  className="border p-5 flex flex-col justify-between space-y-4"
-                  style={{ background: t.surface, borderColor: t.border }}
+          {/* Controls */}
+          <div className="flex flex-col sm:flex-row gap-3">
+            {/* Area toggle */}
+            <div className="flex border" style={{ borderColor: t.border }}>
+              {[
+                { key: 'myArea',  label: 'My Area' },
+                { key: 'allPune', label: 'All Pune' },
+              ].map(tab => (
+                <button
+                  key={tab.key}
+                  type="button"
+                  onClick={() => setAreaTab(tab.key)}
+                  className="flex-1 wd-mono text-xs font-bold px-5 py-2.5 cursor-pointer transition-colors border-r last:border-r-0"
+                  style={{
+                    borderColor: t.border,
+                    background: areaTab === tab.key ? t.accent : 'transparent',
+                    color: areaTab === tab.key ? t.accentText : t.muted,
+                  }}
                 >
-                  <div>
-                    <div className="flex justify-between items-start mb-2">
-                      <span
-                        className="wd-mono text-[10px] font-bold px-2 py-0.5 border"
-                        style={{
-                          background: job.status === 'IN_PROGRESS' ? '#FEF3C7' : t.accentSoft,
-                          borderColor: job.status === 'IN_PROGRESS' ? '#F59E0B' : t.border,
-                          color: job.status === 'IN_PROGRESS' ? '#D97706' : t.accent,
-                        }}
-                      >
-                        [{job.status}]
-                      </span>
-                      <strong className="wd-mono text-sm font-bold" style={{ color: '#10B981' }}>
-                        ₹{job.workerPayout} Payout
-                      </strong>
-                    </div>
-
-                    <h3 className="wd-display font-black text-base uppercase" style={{ color: t.text }}>
-                      {job.title}
-                    </h3>
-                    <p className="text-xs mt-1 leading-relaxed" style={{ color: t.muted }}>
-                      {job.description || 'Standard task description.'}
-                    </p>
-
-                    <div className="space-y-1.5 wd-mono text-xs mt-4 pt-3 border-t" style={{ borderColor: t.border, color: t.muted }}>
-                      <div className="flex items-center gap-2">
-                        <MapPin size={13} style={{ color: t.accent }} />
-                        <span>{job.locality}, {job.address}</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Clock size={13} style={{ color: t.accent }} />
-                        <span>{job.preferredDate} ({job.preferredTime || 'Standard Slot'})</span>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Phone size={13} style={{ color: t.accent }} />
-                        <span>Customer: {job.customerName} ({job.customerPhone})</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* State Machine Transition Triggers */}
-                  <div className="pt-2">
-                    {job.status === 'ACCEPTED' && (
-                      <button
-                        type="button"
-                        disabled={actionLoading === job.requestId}
-                        onClick={() => handleJobAction(job.requestId, 'start')}
-                        className="w-full wd-mono wd-btn text-xs font-bold py-2.5 flex items-center justify-center gap-2 cursor-pointer shadow-xs"
-                        style={{ background: t.accent, color: t.accentText, border: 'none' }}
-                      >
-                        <Play size={13} /> {actionLoading === job.requestId ? 'STARTING...' : 'START ON-SITE WORK'}
-                      </button>
-                    )}
-
-                    {job.status === 'IN_PROGRESS' && (
-                      <button
-                        type="button"
-                        disabled={actionLoading === job.requestId}
-                        onClick={() => handleJobAction(job.requestId, 'complete')}
-                        className="w-full wd-mono wd-btn text-xs font-bold py-2.5 flex items-center justify-center gap-2 cursor-pointer text-white shadow-xs"
-                        style={{ background: '#10B981', border: 'none' }}
-                      >
-                        <CheckSquare size={13} /> {actionLoading === job.requestId ? 'VERIFYING...' : 'MARK TASK COMPLETED'}
-                      </button>
-                    )}
-                  </div>
-                </div>
+                  {tab.label}
+                </button>
               ))}
             </div>
-          ) : (
+
+            {/* Sort dropdown */}
+            <div className="relative">
+              <button
+                type="button"
+                onClick={() => setShowSort(!showSort)}
+                className="wd-mono text-xs font-bold px-4 py-2.5 border flex items-center gap-2 cursor-pointer"
+                style={{ borderColor: t.border, color: t.text, background: t.surface }}
+              >
+                Sort: {SORT_LABELS[sortKey]} <ChevronDown size={13} />
+              </button>
+              {showSort && (
+                <div
+                  className="absolute top-full left-0 mt-1 border z-10 min-w-[180px] shadow-sm"
+                  style={{ background: t.surface, borderColor: t.border }}
+                >
+                  {Object.entries(SORT_LABELS).map(([key, label]) => (
+                    <button
+                      key={key}
+                      type="button"
+                      onClick={() => { setSortKey(key); setShowSort(false); }}
+                      className="w-full text-left px-4 py-2.5 wd-mono text-xs cursor-pointer"
+                      style={{
+                        background: sortKey === key ? t.accentSoft : 'transparent',
+                        color: sortKey === key ? t.accent : t.text,
+                      }}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Job list */}
+          {loading ? (
+            <div className="py-12 text-center wd-mono text-xs animate-pulse" style={{ color: t.muted }}>
+              Loading available work…
+            </div>
+          ) : filteredJobs.length === 0 ? (
             <div
-              className="p-8 border text-center wd-mono text-xs"
-              style={{ background: t.surface, borderColor: t.border, color: t.muted }}
+              className="py-14 text-center border"
+              style={{ background: t.surface, borderColor: t.border }}
             >
-              No active tasks claimed. Check the sector feed above to accept open jobs.
+              <Zap size={28} className="mx-auto mb-3" style={{ color: t.faint }} />
+              <div className="wd-display font-black text-base" style={{ color: t.text }}>
+                No open jobs {areaTab === 'myArea' ? `in ${profile?.locality || 'your area'}` : 'in Pune'} right now
+              </div>
+              <p className="wd-mono text-xs mt-2" style={{ color: t.muted }}>
+                New jobs appear here as customers post them.
+              </p>
+              {areaTab === 'myArea' && (
+                <button
+                  type="button"
+                  onClick={() => setAreaTab('allPune')}
+                  className="mt-4 wd-mono text-xs font-bold px-5 py-2.5 border cursor-pointer"
+                  style={{ borderColor: t.accent, color: t.accent }}
+                >
+                  Browse all Pune →
+                </button>
+              )}
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {filteredJobs.map(job => (
+                <JobCard
+                  key={job.requestId}
+                  job={job}
+                  profile={profile}
+                  onView={id => navigate(`/jobs/${id}`)}
+                  t={t}
+                />
+              ))}
+
+              {filteredJobs.length >= 5 && (
+                <button
+                  type="button"
+                  onClick={() => navigate('/worker/find-jobs')}
+                  className="w-full wd-mono text-xs font-bold py-3.5 border cursor-pointer"
+                  style={{ borderColor: t.border, color: t.accent, background: t.surface }}
+                >
+                  Browse all available work →
+                </button>
+              )}
             </div>
           )}
         </section>
 
-        {/* ─── 4. Archived History / Completed Payouts ─── */}
-        <section className="space-y-4">
-          <div className="flex justify-between items-baseline border-b pb-3" style={{ borderColor: t.border }}>
-            <div className="flex items-center gap-2">
-              <span className="wd-mono text-xs font-bold" style={{ color: t.accent }}>02 //</span>
-              <h2 className="wd-display font-black text-lg uppercase tracking-tight" style={{ color: t.text }}>
-                Closed Work Orders ({completedJobs.length})
+        {/* ── 5. Recent work ── */}
+        {recentWork.length > 0 && (
+          <section className="space-y-3">
+            <div className="flex items-baseline justify-between border-b pb-3" style={{ borderColor: t.border }}>
+              <h2 className="wd-display font-black text-lg tracking-tight" style={{ color: t.text }}>
+                Recent work
               </h2>
+              <button
+                type="button"
+                onClick={() => navigate('/worker/my-jobs')}
+                className="wd-mono text-xs cursor-pointer hover:opacity-70"
+                style={{ color: t.accent }}
+              >
+                View all →
+              </button>
             </div>
-            <span className="wd-mono text-xs" style={{ color: t.muted }}>PAYOUTS SETTLED</span>
-          </div>
 
-          {completedJobs.length > 0 ? (
-            <div className="space-y-2">
-              {completedJobs.map((job) => (
+            <div className="border" style={{ borderColor: t.border }}>
+              {recentWork.map((job, idx) => (
                 <div
-                  key={job.requestId}
-                  className="p-4 border flex flex-col sm:flex-row justify-between sm:items-center gap-3"
-                  style={{ background: t.surface, borderColor: t.border }}
+                  key={job.requestId || idx}
+                  onClick={() => navigate(`/jobs/${job.requestId}`)}
+                  className="flex items-center justify-between px-5 py-3.5 border-b last:border-b-0 gap-4 cursor-pointer hover:opacity-85 transition-opacity"
+                  style={{ borderColor: t.border, background: idx % 2 === 0 ? t.surface : t.cardHover }}
                 >
                   <div>
-                    <div className="flex items-center gap-2">
-                      <span className="wd-mono text-xs font-bold" style={{ color: t.accent }}>#{job.requestId}</span>
-                      <strong className="wd-display text-sm uppercase" style={{ color: t.text }}>{job.title}</strong>
-                    </div>
-                    <div className="wd-mono text-xs mt-1" style={{ color: t.muted }}>
-                      Completed on {job.preferredDate} • Sector: {job.locality}
+                    <span className="font-semibold text-sm" style={{ color: t.text }}>{job.title}</span>
+                    <div className="wd-mono text-[11px] mt-0.5" style={{ color: t.muted }}>
+                      {job.locality} · {job.preferredDate || 'Completed'}
                     </div>
                   </div>
-
-                  <div className="flex items-center gap-3">
-                    <span className="wd-mono text-xs font-bold" style={{ color: '#10B981' }}>
-                      + ₹{job.workerPayout} Paid
+                  <div className="flex items-center gap-3 shrink-0">
+                    <span className="wd-mono font-bold text-sm" style={{ color: t.success }}>
+                      +₹{job.workerPayout}
                     </span>
-                    <span className="wd-mono text-[10px] font-bold px-2 py-0.5 border border-emerald-500 text-emerald-500">
-                      RESOLVED
+                    <span className="wd-mono text-[10px] font-bold px-2.5 py-1 border hover:bg-emerald-500 hover:text-white transition-colors" style={{ borderColor: t.success, color: t.success }}>
+                      View →
                     </span>
                   </div>
                 </div>
               ))}
             </div>
-          ) : (
-            <div
-              className="p-6 border text-center wd-mono text-xs"
-              style={{ background: t.surface, borderColor: t.border, color: t.muted }}
-            >
-              No closed work orders recorded yet.
-            </div>
-          )}
-        </section>
+          </section>
+        )}
 
       </main>
     </div>

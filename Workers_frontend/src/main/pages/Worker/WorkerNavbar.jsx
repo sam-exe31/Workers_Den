@@ -1,143 +1,341 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useTheme } from '../../../theme/ThemeContext';
+import { useWorker } from '../../../context/WorkerContext';
+import api from '../../../api/axiosClient';
 import Logo from './../../Component/Logo';
-import { Search, LayoutDashboard, UserCheck, LogOut, Radio } from 'lucide-react';
+import {
+  LayoutDashboard,
+  Briefcase,
+  IndianRupee,
+  User,
+  Bell,
+  LogOut,
+  Menu,
+  X,
+  AlertTriangle,
+} from 'lucide-react';
 
+const NAV_LINKS = [
+  { to: '/worker/dashboard', label: 'Dashboard',     icon: LayoutDashboard },
+  { to: '/worker/find-jobs', label: 'Available Work', icon: Briefcase },
+  { to: '/worker/my-jobs',   label: 'My Jobs',        icon: Briefcase },
+  { to: '/worker/earnings',  label: 'Earnings',       icon: IndianRupee },
+  { to: '/worker/profile',   label: 'Profile',        icon: User },
+];
+
+// ── Logout confirmation dialog ───────────────────────────────────────────────
+function LogoutDialog({ onConfirm, onCancel, firstName, t }) {
+  return (
+    // Backdrop
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center px-4"
+      style={{ background: 'rgba(24, 32, 46, 0.55)', backdropFilter: 'blur(2px)' }}
+      onClick={onCancel}
+    >
+      {/* Card — stop propagation so clicking the card doesn't close */}
+      <div
+        className="w-full max-w-sm border shadow-lg"
+        style={{ background: t.surface, borderColor: t.borderStrong }}
+        onClick={e => e.stopPropagation()}
+      >
+        {/* Header strip */}
+        <div
+          className="flex items-center justify-between px-5 py-3 border-b"
+          style={{ borderColor: t.border, background: t.cardHover }}
+        >
+          <span className="wd-mono text-[10px] font-bold uppercase tracking-widest" style={{ color: t.muted }}>
+            Confirm action
+          </span>
+          <button
+            type="button"
+            onClick={onCancel}
+            className="cursor-pointer hover:opacity-60 p-0.5"
+            style={{ color: t.muted }}
+          >
+            <X size={14} />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="px-6 py-6 space-y-4">
+          <div className="flex items-start gap-3.5">
+            <div
+              className="w-9 h-9 shrink-0 flex items-center justify-center border"
+              style={{ borderColor: t.stamp, background: 'rgba(194,59,30,0.08)', color: t.stamp }}
+            >
+              <AlertTriangle size={16} />
+            </div>
+            <div>
+              <div className="font-semibold text-sm" style={{ color: t.text }}>
+                Log out of Workers Den?
+              </div>
+              <p className="wd-mono text-xs mt-1 leading-relaxed" style={{ color: t.muted }}>
+                You'll need to sign in again to access your work dashboard{firstName ? `, ${firstName}` : ''}.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Actions */}
+        <div className="flex gap-2 px-6 pb-6">
+          <button
+            type="button"
+            onClick={onCancel}
+            className="flex-1 wd-mono text-xs font-bold py-2.5 border cursor-pointer"
+            style={{ borderColor: t.border, color: t.text, background: 'transparent' }}
+          >
+            Stay signed in
+          </button>
+          <button
+            type="button"
+            onClick={onConfirm}
+            className="flex-1 wd-mono wd-btn text-xs font-bold py-2.5 flex items-center justify-center gap-2 cursor-pointer"
+            style={{ background: t.stamp, color: '#fff', border: 'none' }}
+          >
+            <LogOut size={13} /> Log out
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Main navbar ───────────────────────────────────────────────────────────────
 export default function WorkerNavbar() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { mode, setMode, theme: t } = useTheme();
+  const navigate     = useNavigate();
+  const location     = useLocation();
+  const { theme: t } = useTheme();
 
-  const handleLogout = () => {
+  // ── shared worker profile from context (or fallback) ──
+  const { profile: ctxProfile, toggleAvailability: ctxToggleAvailability } = useWorker();
+  const [localProfile, setLocalProfile] = useState(null);
+
+  const [mobileOpen, setMobile]       = useState(false);
+  const [showLogoutDialog, setDialog] = useState(false);
+  const [logoutHovered, setLogoutHov] = useState(false);
+
+  useEffect(() => {
+    if (!ctxProfile) {
+      api.get('/workers/me')
+        .then(res => setLocalProfile(res.data))
+        .catch(() => {});
+    }
+  }, [ctxProfile]);
+
+  const profile = ctxProfile || localProfile;
+
+  const toggleAvailability = async () => {
+    if (ctxProfile) {
+      return ctxToggleAvailability();
+    }
+    if (!profile) return;
+    try {
+      const res = await api.post('/workers/profile', {
+        ...profile,
+        isAvailable: !profile.isAvailable,
+      });
+      setLocalProfile(res.data);
+    } catch {}
+  };
+
+  const rawUser   = localStorage.getItem('user');
+  const user      = rawUser ? JSON.parse(rawUser) : null;
+  const firstName = user?.fullName?.split(' ')[0] || profile?.userName || 'Worker';
+
+  const confirmLogout = () => {
     localStorage.clear();
     navigate('/login', { replace: true });
   };
 
-  const isCurrent = (path) => location.pathname === path;
+  const isActive = (path) => location.pathname === path;
 
   return (
-    <header
-      className="sticky top-0 z-50 w-full backdrop-blur-md transition-colors duration-150"
-      style={{
-        background: mode === 'light' ? 'rgba(246, 244, 251, 0.92)' : 'rgba(15, 18, 25, 0.90)',
-        borderBottom: `1px solid ${t.border}`,
-      }}
-    >
-      <div className="max-w-6xl mx-auto px-4 sm:px-8 h-16 flex items-center justify-between">
-        
-        {/* Brand & Terminal Designation */}
-        <div className="flex items-center gap-3 select-none">
-          <div onClick={() => navigate('/worker/dashboard')} className="cursor-pointer">
-            <Logo size={28} accentColor={t.accent} textColor={t.text} />
+    <>
+      {/* ── Logout dialog ── */}
+      {showLogoutDialog && (
+        <LogoutDialog
+          onConfirm={confirmLogout}
+          onCancel={() => setDialog(false)}
+          firstName={firstName}
+          t={t}
+        />
+      )}
+
+      <header
+        className="sticky top-0 z-50 w-full"
+        style={{ background: t.surface, borderBottom: `1px solid ${t.border}` }}
+      >
+        <div className="max-w-6xl mx-auto px-4 sm:px-8 h-16 flex items-center justify-between gap-4">
+
+          {/* Brand */}
+          <div
+            className="flex items-center gap-2.5 cursor-pointer shrink-0"
+            onClick={() => navigate('/worker/dashboard')}
+          >
+            <Logo size={26} accentColor={t.accent} textColor={t.text} />
+            <span
+              className="wd-mono text-[9px] font-bold uppercase tracking-widest px-2 py-0.5 border hidden sm:inline"
+              style={{ borderColor: t.warning, color: t.warning, background: 'rgba(183,121,31,0.08)' }}
+            >
+              Worker
+            </span>
           </div>
 
-          <span
-            className="wd-mono text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 border flex items-center gap-1.5"
-            style={{ borderColor: t.border, color: t.accent, background: t.accentSoft }}
-          >
-            <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse inline-block" />
-            WORKER // TERMINAL
-          </span>
-        </div>
-
-        {/* Action Controls & Navigation */}
-        <div className="flex items-center gap-3 sm:gap-4">
-          
-          {/* Find Jobs Primary Action Button */}
-          <button
-            type="button"
-            onClick={() => navigate('/worker/find-jobs')}
-            className="wd-mono wd-btn text-xs font-bold px-3.5 py-2 flex items-center gap-1.5 cursor-pointer shadow-xs"
-            style={{
-              background: t.accent,
-              color: t.accentText,
-              border: 'none',
-            }}
-          >
-            <Search size={14} strokeWidth={2.5} />
-            <span className="hidden sm:inline">FIND WORK ORDERS</span>
-            <span className="sm:hidden">DISPATCH</span>
-          </button>
-
-          {/* Navigation Links */}
-          <nav className="hidden md:flex items-center gap-2 wd-mono text-xs">
-            <Link
-              to="/worker/dashboard"
-              className="px-3 py-1.5 border transition-colors flex items-center gap-1.5"
-              style={{
-                borderColor: isCurrent('/worker/dashboard') ? t.accent : t.border,
-                background: isCurrent('/worker/dashboard') ? t.accentSoft : 'transparent',
-                color: isCurrent('/worker/dashboard') ? t.accent : t.text,
-              }}
-            >
-              <LayoutDashboard size={12} />
-              COMMAND CENTER
-            </Link>
-
-            <Link
-              to="/worker/profile"
-              className="px-3 py-1.5 border transition-colors flex items-center gap-1.5"
-              style={{
-                borderColor: isCurrent('/worker/profile') ? t.accent : t.border,
-                background: isCurrent('/worker/profile') ? t.accentSoft : 'transparent',
-                color: isCurrent('/worker/profile') ? t.accent : t.text,
-              }}
-            >
-              <UserCheck size={12} />
-              LOCALITY & TRADES
-            </Link>
+          {/* Desktop nav */}
+          <nav className="hidden md:flex items-center gap-0.5 flex-1 justify-center">
+            {NAV_LINKS.map(({ to, label }) => (
+              <Link
+                key={to}
+                to={to}
+                className="px-3.5 py-2 wd-mono text-xs font-bold transition-colors"
+                style={{
+                  color: isActive(to) ? t.accent : t.muted,
+                  background: isActive(to) ? t.accentSoft : 'transparent',
+                  borderBottom: isActive(to) ? `2px solid ${t.accent}` : '2px solid transparent',
+                }}
+              >
+                {label}
+              </Link>
+            ))}
           </nav>
 
-          {/* Theme Switch */}
-          <button
-            type="button"
-            onClick={() => setMode(mode === 'light' ? 'dark' : 'light')}
-            className="wd-mono flex items-center gap-2 px-2.5 py-1.5 text-[11px] font-bold border cursor-pointer transition-colors"
-            style={{
-              borderColor: t.border,
-              background: mode === 'light' ? '#FBFAFC' : '#171D2A',
-              color: t.text,
-            }}
-            title="Toggle theme"
-          >
-            <span className="hidden sm:inline text-[10px]">{mode.toUpperCase()}</span>
-            <span
-              style={{
-                position: 'relative',
-                width: 22,
-                height: 12,
-                background: t.border,
-                display: 'inline-block',
-              }}
-            >
-              <span
-                style={{
-                  position: 'absolute',
-                  top: 1,
-                  left: 1,
-                  width: 10,
-                  height: 10,
-                  background: t.accent,
-                  transform: mode === 'dark' ? 'translateX(10px)' : 'translateX(0)',
-                  transition: 'transform 120ms ease',
-                }}
-              />
-            </span>
-          </button>
+          {/* Right controls */}
+          <div className="flex items-center gap-2.5 shrink-0">
 
-          {/* Logout */}
-          <button
-            type="button"
-            onClick={handleLogout}
-            className="wd-mono text-xs font-bold px-2.5 py-1.5 border flex items-center gap-1.5 cursor-pointer hover:opacity-75"
-            style={{ borderColor: t.border, color: t.muted }}
-          >
-            <LogOut size={13} />
-            <span className="hidden sm:inline">EXIT</span>
-          </button>
+            {/* Availability pill */}
+            {profile && (
+              <button
+                type="button"
+                onClick={toggleAvailability}
+                className="hidden sm:flex items-center gap-1.5 wd-mono text-[11px] font-bold px-3 py-1.5 border cursor-pointer transition-all"
+                style={{
+                  borderColor: profile.isAvailable ? t.success : t.border,
+                  color: profile.isAvailable ? t.success : t.muted,
+                  background: profile.isAvailable ? 'rgba(47,125,79,0.08)' : 'transparent',
+                }}
+                title={profile.isAvailable ? 'Go offline' : 'Go online'}
+              >
+                <span className="w-2 h-2 rounded-full" style={{ background: profile.isAvailable ? t.success : t.muted }} />
+                {profile.isAvailable ? 'Available' : 'Offline'}
+              </button>
+            )}
+
+            {/* Notifications stub */}
+            <button
+              type="button"
+              className="p-2 border cursor-pointer hover:opacity-70"
+              style={{ borderColor: t.border, color: t.muted }}
+              title="Notifications"
+            >
+              <Bell size={15} />
+            </button>
+
+            {/* Name + logout */}
+            <div className="hidden sm:flex items-center gap-0">
+              <span
+                className="wd-mono text-xs font-bold px-3 py-2 border-y border-l"
+                style={{ borderColor: t.border, color: t.text }}
+              >
+                {firstName}
+              </span>
+
+              {/* Logout button with hover tooltip */}
+              <div className="relative">
+                <button
+                  type="button"
+                  onClick={() => setDialog(true)}
+                  onMouseEnter={() => setLogoutHov(true)}
+                  onMouseLeave={() => setLogoutHov(false)}
+                  className="wd-mono text-xs font-bold px-2.5 py-2 border cursor-pointer flex items-center gap-1 transition-colors"
+                  style={{
+                    borderColor: logoutHovered ? t.stamp : t.border,
+                    color: logoutHovered ? t.stamp : t.muted,
+                    background: logoutHovered ? 'rgba(194,59,30,0.06)' : 'transparent',
+                  }}
+                >
+                  <LogOut size={13} />
+                </button>
+
+                {/* Hover tooltip */}
+                {logoutHovered && (
+                  <div
+                    className="absolute top-full right-0 mt-1.5 px-2.5 py-1 wd-mono text-[10px] font-bold whitespace-nowrap pointer-events-none"
+                    style={{ background: t.text, color: t.surface }}
+                  >
+                    Log out
+                    {/* Arrow */}
+                    <span
+                      className="absolute -top-1 right-3 w-2 h-2 rotate-45"
+                      style={{ background: t.text }}
+                    />
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Mobile menu toggle */}
+            <button
+              type="button"
+              onClick={() => setMobile(!mobileOpen)}
+              className="md:hidden p-2 border cursor-pointer"
+              style={{ borderColor: t.border, color: t.muted }}
+            >
+              {mobileOpen ? <X size={16} /> : <Menu size={16} />}
+            </button>
+          </div>
         </div>
-      </div>
-    </header>
+
+        {/* Mobile nav drawer */}
+        {mobileOpen && (
+          <div
+            className="md:hidden border-t"
+            style={{ borderColor: t.border, background: t.surface }}
+          >
+            <nav className="flex flex-col px-4 py-3 space-y-0.5">
+              {NAV_LINKS.map(({ to, label, icon: Icon }) => (
+                <Link
+                  key={to}
+                  to={to}
+                  onClick={() => setMobile(false)}
+                  className="flex items-center gap-3 px-4 py-3 wd-mono text-xs font-bold"
+                  style={{
+                    color: isActive(to) ? t.accent : t.text,
+                    background: isActive(to) ? t.accentSoft : 'transparent',
+                    borderLeft: isActive(to) ? `3px solid ${t.accent}` : '3px solid transparent',
+                  }}
+                >
+                  <Icon size={14} />
+                  {label}
+                </Link>
+              ))}
+
+              <div className="border-t pt-3 mt-1" style={{ borderColor: t.border }}>
+                {profile && (
+                  <button
+                    type="button"
+                    onClick={toggleAvailability}
+                    className="w-full flex items-center gap-2 px-4 py-3 wd-mono text-xs font-bold cursor-pointer"
+                    style={{ color: profile.isAvailable ? t.success : t.muted }}
+                  >
+                    <span className="w-2 h-2 rounded-full" style={{ background: profile.isAvailable ? t.success : t.muted }} />
+                    {profile.isAvailable ? 'Available — tap to go offline' : 'Offline — tap to go online'}
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  onClick={() => { setMobile(false); setDialog(true); }}
+                  className="w-full flex items-center gap-2 px-4 py-3 wd-mono text-xs font-bold cursor-pointer hover:opacity-75"
+                  style={{ color: t.muted }}
+                >
+                  <LogOut size={13} /> Log out
+                </button>
+              </div>
+            </nav>
+          </div>
+        )}
+      </header>
+    </>
   );
 }

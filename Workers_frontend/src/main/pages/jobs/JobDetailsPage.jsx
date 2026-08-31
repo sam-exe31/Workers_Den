@@ -4,8 +4,8 @@ import { useTheme } from '../../../theme/ThemeContext';
 import api from '../../../api/axiosClient';
 import CustomerNavbar from '../Customer/CustomerNavbar';
 import WorkerNavbar from '../Worker/WorkerNavbar';
-import { ReviewForm } from '../../Component/Reviews';
-import { MapPin, Calendar, Phone, ArrowLeft, CheckCircle2 } from 'lucide-react';
+import { ReviewForm, StarRating } from '../../Component/Reviews';
+import { MapPin, Calendar, Phone, ArrowLeft, CheckCircle2, Star, ShieldCheck, IndianRupee } from 'lucide-react';
 
 export default function JobDetailsPage() {
   const { id } = useParams();
@@ -18,16 +18,9 @@ export default function JobDetailsPage() {
   const [existingReview, setExistingReview] = useState(null);
   const [reviewSubmitted, setReviewSubmitted] = useState(null);
 
-  const token = localStorage.getItem('token');
-  let userRole = null;
-  if (token) {
-    try {
-      const payload = JSON.parse(atob(token.split('.')[1]));
-      userRole = payload.role ? payload.role.replace('ROLE_', '') : null;
-    } catch {
-      localStorage.clear();
-    }
-  }
+  const rawUser = localStorage.getItem('user');
+  const user = rawUser ? JSON.parse(rawUser) : null;
+  const userRole = user?.role ? user.role.replace('ROLE_', '') : null;
 
   const isWorker = userRole === 'WORKER';
   const isCustomer = userRole === 'CUSTOMER';
@@ -35,11 +28,14 @@ export default function JobDetailsPage() {
   const fetchJob = useCallback(() => {
     api.get(`/jobs/${id}`)
       .then((res) => {
-        setJob(res.data);
-        if (res.data.status === 'COMPLETED' && res.data.workerId) {
-          api.get(`/reviews/worker/${res.data.workerId}`)
+        const jData = res.data;
+        setJob(jData);
+
+        if (jData.status === 'COMPLETED' && jData.workerId) {
+          api.get(`/reviews/worker/${jData.workerId}`)
             .then((r) => {
-              const found = (r.data || []).find((rv) => rv.requestId === res.data.requestId);
+              const reqId = jData.requestId || Number(id);
+              const found = (r.data || []).find((rv) => (rv.requestId || rv.request_id) === reqId);
               setExistingReview(found || null);
             })
             .catch(() => {});
@@ -67,11 +63,36 @@ export default function JobDetailsPage() {
 
   if (!job) {
     return (
-      <div style={{ background: t.bg, color: t.muted }} className="min-h-screen flex items-center justify-center wd-mono text-xs">
-        {error || 'READING WORK ORDER DATA...'}
+      <div style={{ background: t.bg, color: t.muted }} className="min-h-screen flex flex-col font-sans">
+        {isWorker ? <WorkerNavbar /> : <CustomerNavbar />}
+        <main className="flex-1 flex items-center justify-center p-8">
+          <div className="wd-mono text-xs text-center space-y-3">
+            {error ? (
+              <div className="p-4 border" style={{ borderColor: t.stamp, color: t.stamp, background: 'rgba(194,59,30,0.06)' }}>
+                {error}
+              </div>
+            ) : (
+              <div className="animate-pulse" style={{ color: t.muted }}>
+                READING WORK ORDER DATA...
+              </div>
+            )}
+            <div>
+              <button
+                type="button"
+                onClick={() => navigate(-1)}
+                className="wd-mono text-xs font-bold px-4 py-2 border cursor-pointer mt-4"
+                style={{ borderColor: t.border, color: t.text }}
+              >
+                ← Return
+              </button>
+            </div>
+          </div>
+        </main>
       </div>
     );
   }
+
+  const categoryName = job.categoryName || job.catName || job.cat_name || 'SERVICE';
 
   const statusColors = {
     OPEN: { border: t.accent, color: t.accent, bg: t.accentSoft },
@@ -82,11 +103,13 @@ export default function JobDetailsPage() {
   };
   const statusStyle = statusColors[job.status] || statusColors.CANCELLED;
 
+  const reviewToShow = reviewSubmitted || existingReview;
+
   return (
     <div style={{ background: t.bg, color: t.text }} className="min-h-screen flex flex-col font-sans transition-colors duration-150">
       {isWorker ? <WorkerNavbar /> : <CustomerNavbar />}
 
-      <main className="flex-1 max-w-3xl w-full mx-auto px-4 sm:px-8 py-8 space-y-5">
+      <main className="flex-1 max-w-3xl w-full mx-auto px-4 sm:px-8 py-8 space-y-6">
         <button
           type="button"
           onClick={() => navigate(-1)}
@@ -96,122 +119,162 @@ export default function JobDetailsPage() {
           <ArrowLeft size={14} /> BACK
         </button>
 
-        <div className="border p-6 sm:p-8" style={{ background: t.surface, borderColor: t.border }}>
-          <div className="flex items-center justify-between border-b pb-4" style={{ borderColor: t.border }}>
+        {/* Main Work Order Card */}
+        <div className="border p-6 sm:p-8 space-y-6" style={{ background: t.surface, borderColor: t.border }}>
+          <div className="flex items-center justify-between border-b pb-4 flex-wrap gap-2" style={{ borderColor: t.border }}>
             <span className="wd-mono text-xs font-bold" style={{ color: t.accent }}>
-              WORK ORDER #{job.requestId} // {job.categoryName?.toUpperCase()}
+              WORK ORDER #{job.requestId || id} // {categoryName.toUpperCase()}
             </span>
             <span className="wd-mono text-xs font-bold px-2.5 py-1 border" style={{ borderColor: statusStyle.border, color: statusStyle.color, background: statusStyle.bg }}>
               {job.status}
             </span>
           </div>
 
-          <h1 className="wd-display font-black text-2xl uppercase tracking-tight mt-5" style={{ color: t.text }}>
-            {job.title}
-          </h1>
-          <p className="text-sm leading-relaxed mt-2" style={{ color: t.muted }}>
-            {job.description || 'No additional scope of work specified.'}
-          </p>
+          <div>
+            <h1 className="wd-display font-black text-2xl uppercase tracking-tight" style={{ color: t.text }}>
+              {job.title}
+            </h1>
+            <p className="text-sm leading-relaxed mt-2" style={{ color: t.muted }}>
+              {job.description || 'No additional scope of work specified.'}
+            </p>
+          </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6 pt-5 border-t wd-mono text-xs" style={{ borderColor: t.border }}>
-            <div className="flex items-start gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-5 border-t wd-mono text-xs" style={{ borderColor: t.border }}>
+            <div className="flex items-start gap-2.5">
               <MapPin size={14} className="mt-0.5 shrink-0" style={{ color: t.accent }} />
               <div>
                 <div style={{ color: t.muted }}>SERVICE LOCATION</div>
-                <div className="font-semibold mt-0.5" style={{ color: t.text }}>{job.locality}, {job.address}</div>
+                <div className="font-semibold mt-0.5" style={{ color: t.text }}>
+                  {job.locality}{job.address ? `, ${job.address}` : ''}
+                </div>
               </div>
             </div>
 
-            <div className="flex items-start gap-2">
+            <div className="flex items-start gap-2.5">
               <Calendar size={14} className="mt-0.5 shrink-0" style={{ color: t.accent }} />
               <div>
                 <div style={{ color: t.muted }}>DISPATCH SCHEDULE</div>
-                <div className="font-semibold mt-0.5" style={{ color: t.text }}>{job.preferredDate} {job.preferredTime ? `· ${job.preferredTime}` : ''}</div>
+                <div className="font-semibold mt-0.5" style={{ color: t.text }}>
+                  {job.preferredDate || 'Scheduled'} {job.preferredTime ? `· ${job.preferredTime}` : ''}
+                </div>
               </div>
             </div>
 
-            <div className="flex items-start gap-2">
-              <span className="w-3.5 h-3.5 mt-0.5 shrink-0 flex items-center justify-center font-bold" style={{ color: t.accent }}>₹</span>
+            <div className="flex items-start gap-2.5">
+              <IndianRupee size={14} className="mt-0.5 shrink-0" style={{ color: t.success }} />
               <div>
-                <div style={{ color: t.muted }}>{isWorker ? 'WORKER PAYOUT' : 'STANDARD PRICE'}</div>
-                <div className="font-bold mt-0.5" style={{ color: t.accent }}>₹{isWorker ? job.workerPayout : job.customerPrice}</div>
+                <div style={{ color: t.muted }}>{isWorker ? 'GUARANTEED PAYOUT' : 'STANDARD PRICE'}</div>
+                <div className="font-bold text-sm mt-0.5" style={{ color: t.success }}>
+                  ₹{isWorker ? (job.workerPayout || job.customerPrice) : (job.customerPrice || job.workerPayout)}
+                </div>
               </div>
             </div>
 
-            <div className="flex items-start gap-2">
+            <div className="flex items-start gap-2.5">
               <Phone size={14} className="mt-0.5 shrink-0" style={{ color: t.accent }} />
               <div>
-                <div style={{ color: t.muted }}>{isWorker ? 'POSTED BY' : 'ASSIGNED OPERATOR'}</div>
+                <div style={{ color: t.muted }}>{isWorker ? 'CUSTOMER' : 'ASSIGNED WORKER'}</div>
                 <div className="font-semibold mt-0.5" style={{ color: t.text }}>
                   {isWorker
-                    ? `${job.customerName} (${job.customerPhone || 'N/A'})`
-                    : (job.workerName ? `${job.workerName} (${job.workerPhone || 'N/A'})` : 'Unassigned — awaiting claim')}
+                    ? `${job.customerName || 'Customer'} ${job.customerPhone ? `(${job.customerPhone})` : ''}`
+                    : (job.workerName ? `${job.workerName} ${job.workerPhone ? `(${job.workerPhone})` : ''}` : 'Awaiting assignment')}
                 </div>
               </div>
             </div>
           </div>
 
           {error && (
-            <div className="mt-5 p-3 text-xs wd-mono border" style={{
-              background: mode === 'light' ? '#FEE2E2' : '#3B1818',
-              borderColor: mode === 'light' ? '#F87171' : '#7F2323',
-              color: mode === 'light' ? '#B91C1C' : '#FCA5A5',
+            <div className="p-3 text-xs wd-mono border" style={{
+              background: 'rgba(194,59,30,0.06)',
+              borderColor: t.stamp,
+              color: t.stamp,
             }}>
               {error}
             </div>
           )}
 
-          <div className="flex flex-wrap gap-2.5 mt-6 pt-5 border-t" style={{ borderColor: t.border }}>
-            {isWorker && job.status === 'OPEN' && (
-              <button type="button" disabled={acting} onClick={() => handleAction('accept')}
-                className="wd-mono text-xs font-bold px-6 py-3 cursor-pointer disabled:opacity-50"
-                style={{ background: t.accent, color: t.accentText, border: 'none' }}>
-                {acting ? 'CLAIMING...' : 'ACCEPT WORK ORDER'}
-              </button>
-            )}
+          {/* Action Triggers */}
+          {job.status !== 'COMPLETED' && job.status !== 'CANCELLED' && (
+            <div className="flex flex-wrap gap-2.5 pt-5 border-t" style={{ borderColor: t.border }}>
+              {isWorker && job.status === 'OPEN' && (
+                <button type="button" disabled={acting} onClick={() => handleAction('accept')}
+                  className="wd-mono text-xs font-bold px-6 py-3 cursor-pointer disabled:opacity-50"
+                  style={{ background: t.accent, color: t.accentText, border: 'none' }}>
+                  {acting ? 'CLAIMING...' : 'ACCEPT WORK ORDER'}
+                </button>
+              )}
 
-            {isWorker && job.status === 'ACCEPTED' && (
-              <button type="button" disabled={acting} onClick={() => handleAction('start')}
-                className="wd-mono text-xs font-bold px-6 py-3 cursor-pointer disabled:opacity-50"
-                style={{ background: t.accent, color: t.accentText, border: 'none' }}>
-                {acting ? 'UPDATING...' : 'START JOB'}
-              </button>
-            )}
+              {isWorker && job.status === 'ACCEPTED' && (
+                <button type="button" disabled={acting} onClick={() => handleAction('start')}
+                  className="wd-mono text-xs font-bold px-6 py-3 cursor-pointer disabled:opacity-50"
+                  style={{ background: t.warning, color: '#fff', border: 'none' }}>
+                  {acting ? 'UPDATING...' : 'START JOB'}
+                </button>
+              )}
 
-            {isWorker && job.status === 'IN_PROGRESS' && (
-              <button type="button" disabled={acting} onClick={() => handleAction('complete')}
-                className="wd-mono text-xs font-bold px-6 py-3 cursor-pointer disabled:opacity-50 text-white"
-                style={{ background: '#10B981', border: 'none' }}>
-                {acting ? 'CLOSING OUT...' : 'MARK COMPLETED'}
-              </button>
-            )}
+              {isWorker && job.status === 'IN_PROGRESS' && (
+                <button type="button" disabled={acting} onClick={() => handleAction('complete')}
+                  className="wd-mono text-xs font-bold px-6 py-3 cursor-pointer disabled:opacity-50 text-white"
+                  style={{ background: t.success, border: 'none' }}>
+                  {acting ? 'CLOSING OUT...' : 'MARK COMPLETED'}
+                </button>
+              )}
 
-            {job.status !== 'COMPLETED' && job.status !== 'CANCELLED' && (
               <button type="button" disabled={acting} onClick={() => handleAction('cancel')}
                 className="wd-mono text-xs font-bold px-5 py-3 border cursor-pointer disabled:opacity-50"
                 style={{ borderColor: t.border, color: t.muted, background: 'transparent' }}>
                 CANCEL ORDER
               </button>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
-        {isCustomer && job.status === 'COMPLETED' && (
-          <div className="space-y-3">
-            <h2 className="wd-display font-black text-lg uppercase tracking-tight" style={{ color: t.text }}>
-              Rate This Job
-            </h2>
-
-            {reviewSubmitted || existingReview ? (
-              <div className="border p-5 flex items-center gap-3" style={{ background: t.surface, borderColor: t.border }}>
-                <CheckCircle2 size={18} style={{ color: t.success }} />
-                <span className="text-xs wd-mono" style={{ color: t.muted }}>
-                  You already reviewed this job. Thanks for the feedback.
-                </span>
+        {/* Completed Job Summary Banner */}
+        {job.status === 'COMPLETED' && (
+          <div
+            className="border p-6 space-y-4"
+            style={{ background: 'rgba(47,125,79,0.06)', borderColor: t.success }}
+          >
+            <div className="flex items-center gap-3">
+              <CheckCircle2 size={22} style={{ color: t.success }} />
+              <div>
+                <div className="font-bold text-base" style={{ color: t.text }}>
+                  Work Order Completed & Settled
+                </div>
+                <div className="wd-mono text-xs mt-0.5" style={{ color: t.muted }}>
+                  {isWorker
+                    ? `Payout of ₹${job.workerPayout || job.customerPrice} recorded in your earnings.`
+                    : `Service completed by ${job.workerName || 'assigned worker'}.`}
+                </div>
               </div>
-            ) : (
-              <ReviewForm requestId={job.requestId} onSubmitted={(data) => setReviewSubmitted(data)} />
-            )}
+            </div>
+
+            {/* Customer Review Section */}
+            {reviewToShow ? (
+              <div className="mt-4 pt-4 border-t space-y-2" style={{ borderColor: t.border }}>
+                <div className="wd-mono text-xs font-bold uppercase tracking-wider" style={{ color: t.accent }}>
+                  Customer Review
+                </div>
+                <div className="flex items-center gap-2">
+                  <StarRating value={reviewToShow.rating || 5} size={15} />
+                  <span className="wd-mono text-xs font-bold" style={{ color: t.text }}>
+                    {reviewToShow.rating}.0 / 5.0
+                  </span>
+                </div>
+                {reviewToShow.reviewText && (
+                  <p className="text-xs leading-relaxed italic p-3 border" style={{ background: t.surface, borderColor: t.border, color: t.text }}>
+                    "{reviewToShow.reviewText}"
+                  </p>
+                )}
+              </div>
+            ) : isCustomer ? (
+              <div className="mt-4 pt-4 border-t space-y-3" style={{ borderColor: t.border }}>
+                <div className="wd-mono text-xs font-bold uppercase tracking-wider" style={{ color: t.accent }}>
+                  Leave Feedback
+                </div>
+                <ReviewForm requestId={job.requestId || id} onSubmitted={(data) => setReviewSubmitted(data)} />
+              </div>
+            ) : null}
           </div>
         )}
       </main>
