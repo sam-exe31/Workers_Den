@@ -116,19 +116,6 @@ export default function WorkerNavbar() {
   const [logoutHovered, setLogoutHov] = useState(false);
 
   useEffect(() => {
-    const handlePopState = () => {
-      if (location.pathname === '/worker/dashboard') {
-        navigate('/worker/logout');
-      }
-    };
-
-    window.addEventListener('popstate', handlePopState);
-    return () => {
-      window.removeEventListener('popstate', handlePopState);
-    };
-  }, [location.pathname, navigate]);
-
-  useEffect(() => {
     if (!ctxProfile) {
       api.get('/workers/me')
         .then(res => setLocalProfile(res.data))

@@ -39,6 +39,17 @@ public class UserController {
         return ResponseEntity.ok(user);
     }
 
+    @PutMapping("/me")
+    public ResponseEntity<UserResponseDTO> updateCurrentUser(
+            Authentication authentication,
+            @RequestBody java.util.Map<String, String> body) {
+        String email = authentication.getName();
+        String fullName = body.get("fullName") != null ? body.get("fullName") : body.get("user_name");
+        String phone = body.get("phone");
+        UserResponseDTO updatedUser = userServices.updateUserProfile(email, fullName, phone);
+        return ResponseEntity.ok(updatedUser);
+    }
+
     @PostMapping
     public ResponseEntity<UserResponseDTO> adduser(@Valid @RequestBody UserRequestDTO dto){
         return ResponseEntity.ok(userServices.adduser(dto));

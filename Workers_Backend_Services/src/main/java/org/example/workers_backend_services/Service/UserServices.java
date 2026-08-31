@@ -80,4 +80,18 @@ public class UserServices {
                 .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
         return convertToDTO(user);
     }
+
+    @org.springframework.transaction.annotation.Transactional
+    public UserResponseDTO updateUserProfile(String email, String fullName, String phone) {
+        Users user = repository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+        if (fullName != null && !fullName.trim().isEmpty()) {
+            user.setUser_name(fullName.trim());
+        }
+        if (phone != null && !phone.trim().isEmpty()) {
+            user.setPhone(phone.trim());
+        }
+        Users updated = repository.save(user);
+        return convertToDTO(updated);
+    }
 }

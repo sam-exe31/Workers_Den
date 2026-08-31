@@ -539,6 +539,19 @@ export default function Home() {
   const { theme: t }        = useTheme();
   const [jobs, setJobs]     = useState([]);
   const [activeReview, setActiveReview] = useState(null);
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    const userStr = localStorage.getItem('user');
+    if (token && userStr) {
+      try {
+        const u = JSON.parse(userStr);
+        const role = u?.role ? u.role.replace('ROLE_', '') : '';
+        const targetPath = role === 'WORKER' ? '/worker/dashboard' : '/customer/dashboard';
+        navigate(targetPath, { replace: true });
+        return;
+      } catch {}
+    }
+  }, [navigate]);
 
   useEffect(() => {
     // Fetch live categories from DB

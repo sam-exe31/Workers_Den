@@ -56,12 +56,64 @@ const FAQ_ITEMS = [
   }
 ];
 
+const getCategoryMeta = (name = '') => {
+  const lower = name.toLowerCase();
+  if (lower.includes('electric')) {
+    return {
+      icon: Zap,
+      img: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=600&auto=format&fit=crop&q=80',
+    };
+  }
+  if (lower.includes('plumb')) {
+    return {
+      icon: Wrench,
+      img: 'https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=600&auto=format&fit=crop&q=80',
+    };
+  }
+  if (lower.includes('clean')) {
+    return {
+      icon: Sparkles,
+      img: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=600&auto=format&fit=crop&q=80',
+    };
+  }
+  if (lower.includes('carpen')) {
+    return {
+      icon: Hammer,
+      img: 'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=600&auto=format&fit=crop&q=80',
+    };
+  }
+  if (lower.includes('paint')) {
+    return {
+      icon: Paintbrush,
+      img: 'https://images.unsplash.com/photo-1562259949-e8e7689d7828?w=600&auto=format&fit=crop&q=80',
+    };
+  }
+  if (lower.includes('ac') || lower.includes('air') || lower.includes('cool')) {
+    return {
+      icon: Snowflake,
+      img: 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=600&auto=format&fit=crop&q=80',
+    };
+  }
+  if (lower.includes('cater') || lower.includes('food') || lower.includes('cook')) {
+    return {
+      icon: Utensils,
+      img: 'https://images.unsplash.com/photo-1555244162-803834f70033?w=600&auto=format&fit=crop&q=80',
+    };
+  }
+  return {
+    icon: Compass,
+    img: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=600&auto=format&fit=crop&q=80',
+  };
+};
+
 export default function CustomerDashboard() {
   const navigate = useNavigate();
   const { theme: t } = useTheme();
 
   const [myJobs, setMyJobs] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [categories, setCategories] = useState([]);
+  const [loadingCategories, setLoadingCategories] = useState(true);
   const [actingJobId, setActingJobId] = useState(null);
   const [openFaq, setOpenFaq] = useState(null);
 
@@ -73,9 +125,32 @@ export default function CustomerDashboard() {
   // Simulated 60-second multi-worker matching timer state
   const [matchingTimer, setMatchingTimer] = useState(60);
 
-  const rawUser = localStorage.getItem('user');
-  const user = rawUser ? JSON.parse(rawUser) : null;
-  const firstName = user?.fullName?.split(' ')[0] || 'there';
+  const [currentUser, setCurrentUser] = useState(() => {
+    const rawUser = localStorage.getItem('user');
+    return rawUser ? JSON.parse(rawUser) : null;
+  });
+
+  useEffect(() => {
+    api.get('/users/me')
+      .then(res => {
+        if (res.data) {
+          const u = res.data;
+          const updated = {
+            ...currentUser,
+            fullName: u.user_name || u.fullName || currentUser?.fullName,
+            email: u.email || currentUser?.email,
+            phone: u.phone || currentUser?.phone,
+            role: u.role || currentUser?.role
+          };
+          setCurrentUser(updated);
+          localStorage.setItem('user', JSON.stringify(updated));
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const displayName = currentUser?.fullName || currentUser?.user_name || currentUser?.email || 'there';
+  const firstName = displayName.split(' ')[0] || 'there';
 
   const loadRequests = () => {
     api.get('/jobs/customer/my-jobs')
@@ -88,6 +163,13 @@ export default function CustomerDashboard() {
     loadRequests();
     const interval = setInterval(loadRequests, 8000); // Polling status updates
     return () => clearInterval(interval);
+  }, []);
+
+  useEffect(() => {
+    api.get('/Categories')
+      .then(res => setCategories(res.data || []))
+      .catch(() => setCategories([]))
+      .finally(() => setLoadingCategories(false));
   }, []);
 
   // All active open or assigned jobs
@@ -487,63 +569,72 @@ export default function CustomerDashboard() {
             <h2 className="wd-display font-black text-lg tracking-tight" style={{ color: t.text }}>
               Quick Book a Trade
             </h2>
-            <span className="wd-mono text-xs" style={{ color: t.muted }}>Fixed upfront pricing</span>
+            <span className="wd-mono text-xs" style={{ color: t.muted }}>
+              {loadingCategories ? 'Loading categories…' : `${categories.length} trade categories`}
+            </span>
           </div>
 
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-            {[
-              { label: 'Electrical', icon: Zap, price: 'From ₹399', desc: 'Wiring, MCBs & Fans', img: 'https://images.unsplash.com/photo-1621905251189-08b45d6a269e?w=600&auto=format&fit=crop&q=80' },
-              { label: 'Plumbing', icon: Wrench, price: 'From ₹299', desc: 'Leaks, Pipes & Taps', img: 'https://images.unsplash.com/photo-1607472586893-edb57bdc0e39?w=600&auto=format&fit=crop&q=80' },
-              { label: 'Cleaning', icon: Sparkles, price: 'From ₹699', desc: 'Deep Clean & Maids', img: 'https://images.unsplash.com/photo-1581578731548-c64695cc6952?w=600&auto=format&fit=crop&q=80' },
-              { label: 'Carpentry', icon: Hammer, price: 'From ₹499', desc: 'Furniture & Fixes', img: 'https://images.unsplash.com/photo-1504148455328-c376907d081c?w=600&auto=format&fit=crop&q=80' },
-              { label: 'Painting', icon: Paintbrush, price: 'From ₹899', desc: 'Walls & Touch-ups', img: 'https://images.unsplash.com/photo-1562259949-e8e7689d7828?w=600&auto=format&fit=crop&q=80' },
-              { label: 'AC Repair', icon: Snowflake, price: 'From ₹699', desc: 'Service & Gas Refill', img: 'https://images.unsplash.com/photo-1621905252507-b35492cc74b4?w=600&auto=format&fit=crop&q=80' },
-              { label: 'Catering', icon: Utensils, price: 'From ₹1200', desc: 'Parties & Setup', img: 'https://images.unsplash.com/photo-1555244162-803834f70033?w=600&auto=format&fit=crop&q=80' },
-              { label: 'Handyman', icon: Compass, price: 'From ₹349', desc: 'General Repairs', img: 'https://images.unsplash.com/photo-1581092160607-ee22621dd758?w=600&auto=format&fit=crop&q=80' },
-            ].map(cat => {
-              const Icon = cat.icon;
-              return (
-                <div
-                  key={cat.label}
-                  onClick={() => navigate('/customer/create-job')}
-                  className="relative group border overflow-hidden cursor-pointer rounded-sm shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
-                  style={{ borderColor: t.border, background: t.surface }}
-                >
-                  {/* Photo Cover with Gradient Overlay */}
-                  <div className="h-28 w-full relative overflow-hidden bg-slate-900">
-                    <img
-                      src={cat.img}
-                      alt={cat.label}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 opacity-90 group-hover:opacity-100"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+          {loadingCategories ? (
+            <div className="py-12 text-center wd-mono text-xs animate-pulse" style={{ color: t.muted }}>
+              Loading database categories…
+            </div>
+          ) : categories.length === 0 ? (
+            <div className="p-8 border text-center space-y-2" style={{ background: t.surface, borderColor: t.border }}>
+              <Compass size={28} className="mx-auto" style={{ color: t.faint }} />
+              <div className="wd-mono text-xs font-bold" style={{ color: t.text }}>
+                No active categories found in database
+              </div>
+            </div>
+          ) : (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              {categories.map(cat => {
+                const name = cat.catName || cat.cat_name || 'Service';
+                const meta = getCategoryMeta(name);
+                const Icon = meta.icon;
+                const price = cat.customerPrice || cat.customer_price || 0;
+                const desc = cat.description || `${name} services in Pune with verified workers.`;
 
-                    <span className="absolute top-2.5 right-2.5 wd-mono text-[10px] font-bold px-2 py-0.5 rounded bg-amber-600 text-white shadow-sm">
-                      {cat.price}
-                    </span>
-
-                    <div className="absolute bottom-2.5 left-2.5 flex items-center gap-2 text-white">
-                      <div className="w-7 h-7 rounded bg-amber-600/90 flex items-center justify-center text-white backdrop-blur-sm">
-                        <Icon size={14} />
+                return (
+                  <div
+                    key={cat.id || name}
+                    onClick={() => navigate(`/customer/create-job?category=${encodeURIComponent(name)}`)}
+                    className="relative group border overflow-hidden cursor-pointer rounded-sm shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-md"
+                    style={{ borderColor: t.border, background: t.surface }}
+                  >
+                    {/* Photo Cover with Gradient Overlay */}
+                    <div className="h-28 w-full relative overflow-hidden bg-slate-900">
+                      <img
+                        src={meta.img}
+                        alt={name}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500 opacity-90 group-hover:opacity-100"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                      <div className="absolute bottom-2.5 left-2.5 flex items-center gap-2 text-white">
+                        <div className="w-7 h-7 rounded flex items-center justify-center text-white backdrop-blur-sm">
+                          <Icon size={14} />
+                        </div>
+                        <div className="font-bold text-sm tracking-tight text-white drop-shadow">
+                          {name}
+                        </div>
                       </div>
-                      <div className="font-bold text-sm tracking-tight text-white drop-shadow">
-                        {cat.label}
+                    </div>
+
+                    <div className="p-3">
+                      <div className="wd-mono text-[11px] font-medium line-clamp-2" style={{ color: t.muted }}>
+                        {desc}
+                      </div>
+                      <div className="mt-2 wd-mono text-[11px] font-bold flex items-center justify-between">
+                        <span style={{ color: t.accent }}>From ₹{price}</span>
+                        <span className="flex items-center gap-0.5 group-hover:translate-x-1 transition-transform" style={{ color: t.accent }}>
+                          Book <ArrowRight size={11} />
+                        </span>
                       </div>
                     </div>
                   </div>
-
-                  <div className="p-3">
-                    <div className="wd-mono text-[11px] font-medium" style={{ color: t.muted }}>
-                      {cat.desc}
-                    </div>
-                    <div className="mt-2 wd-mono text-[11px] font-bold flex items-center gap-1 group-hover:translate-x-1 transition-transform" style={{ color: t.accent }}>
-                      Book now <ArrowRight size={11} />
-                    </div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
+                );
+              })}
+            </div>
+          )}
         </section>
 
         {/* ── 4. Platform Guarantees ── */}
