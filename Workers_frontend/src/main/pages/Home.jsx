@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence, useReducedMotion } from 'framer-motion';
 import api from '../../api/axiosClient';
-import { useTheme } from '../../Theme/ThemeContext';
+import { useTheme } from '../../theme/ThemeContext';
 import Logo from '../Component/Logo';
 import {
   ArrowRight,

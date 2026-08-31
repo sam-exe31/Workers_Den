@@ -1,6 +1,6 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../Theme/ThemeContext';
+import { useTheme } from '../../theme/ThemeContext';
 import LandingNavbar from '../Component/LandingNavbar';
 import Footer from '../Component/Footer';
 import { ShieldCheck, Wallet, Clock, Users, ArrowRight, MapPin } from 'lucide-react';

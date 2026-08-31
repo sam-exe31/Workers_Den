@@ -1,5 +1,5 @@
 import React from 'react';
-import { PALETTE } from '../../Theme/palette';
+import { PALETTE } from '../../theme/palette';
 import Logo from './Logo';
 import { AlertTriangle, RotateCcw } from 'lucide-react';
 

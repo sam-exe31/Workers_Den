@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import axiosClient from '../../api/axiosClient';
-import { useTheme } from '../../Theme/ThemeContext';
+import { useTheme } from '../../theme/ThemeContext';
 import Logo from '../Component/Logo';
 import { Eye, EyeOff, ArrowLeft, ArrowRight, AlertCircle, CheckCircle2, X } from 'lucide-react';
 

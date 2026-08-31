@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../../Theme/ThemeContext';
+import { useTheme } from '../../../theme/ThemeContext';
 import api from '../../../api/axiosClient';
 import WorkerNavbar from './WorkerNavbar';
 import { TrendingUp, CheckCircle2, IndianRupee } from 'lucide-react';

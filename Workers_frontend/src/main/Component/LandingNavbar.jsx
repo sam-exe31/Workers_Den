@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useTheme } from '../../Theme/ThemeContext'; // Adjust path if needed
+import { useTheme } from '../../theme/ThemeContext'; // Adjust path if needed
 import { ArrowRight, Menu, X, Wrench, GitCommit, Users2, BookOpen } from 'lucide-react';
 import Logo from './Logo';
 

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Navigate, Outlet } from 'react-router-dom';
 import api from '../../api/axiosClient';
-import { useTheme } from '../../Theme/ThemeContext';
+import { useTheme } from '../../theme/ThemeContext';
 import { WorkerProvider } from '../../context/WorkerContext';
 
 /**
