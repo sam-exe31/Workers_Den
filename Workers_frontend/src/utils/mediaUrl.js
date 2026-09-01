@@ -1,6 +1,6 @@
 /**
  * mediaUrl.js — Resolves photo and image URLs cleanly across environments.
- * Handles relative paths (/uploads/...), absolute localhost URLs, and external URLs.
+ * Handles Cloudinary URLs, relative paths (/uploads/...), absolute localhost URLs, and external URLs.
  */
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api';
@@ -11,10 +11,13 @@ export function getMediaUrl(url, fallback = '') {
   if (!url) return fallback;
   if (typeof url !== 'string') return fallback;
 
-  // Handle data URIs or external absolute URLs (non-localhost)
+  // Handle data URIs
   if (url.startsWith('data:')) return url;
 
-  // If path is relative like /uploads/abc.jpg or uploads/abc.jpg
+  // Cloudinary URLs — pass through as-is (they are already absolute and permanent)
+  if (url.includes('res.cloudinary.com')) return url;
+
+  // If path is relative like /uploads/abc.jpg or uploads/abc.jpg (legacy local uploads)
   if (url.startsWith('/uploads/') || url.startsWith('uploads/')) {
     const cleanPath = url.startsWith('/') ? url : `/${url}`;
     return `${BACKEND_ORIGIN}${cleanPath}`;
@@ -30,3 +33,4 @@ export function getMediaUrl(url, fallback = '') {
 }
 
 export default getMediaUrl;
+

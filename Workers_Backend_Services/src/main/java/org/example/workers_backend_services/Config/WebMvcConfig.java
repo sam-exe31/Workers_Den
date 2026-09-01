@@ -9,7 +9,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
 
     @Override
     public void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("/uploads/**")
-                .addResourceLocations("file:uploads/");
+        // Images are now stored on Cloudinary — no local /uploads/** serving needed.
+        // This method is kept as an extension point for future static resource handling.
     }
-}
+}
