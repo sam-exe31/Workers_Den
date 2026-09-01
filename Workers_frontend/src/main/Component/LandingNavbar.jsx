@@ -135,26 +135,11 @@ export default function LandingNavbar() {
           ))}
         </nav>
 
-        <div className="flex items-center gap-3">
-          <button
-            type="button"
-            onClick={() => navigate(-1)}
-            className="wd-mono flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold border cursor-pointer transition-colors"
-            style={{
-              borderColor: t.border,
-              background: mode === 'light' ? '#FBFAFC' : '#171D2A',
-              color: t.text,
-            }}
-            title="Go to previous page"
-          >
-            <ArrowLeft size={13} />
-            <span className="hidden sm:inline">GO BACK</span>
-          </button>
-
+        <div className="flex items-center gap-2 sm:gap-3">
           <button
             type="button"
             onClick={() => setMode(mode === 'light' ? 'dark' : 'light')}
-            className="wd-mono flex items-center gap-2 px-2.5 py-1.5 text-[11px] font-bold border cursor-pointer transition-colors"
+            className="wd-mono flex items-center gap-1.5 sm:gap-2 px-2 sm:px-2.5 py-1.5 text-[11px] font-bold border cursor-pointer transition-colors"
             style={{
               borderColor: t.border,
               background: mode === 'light' ? '#FBFAFC' : '#171D2A',
@@ -187,12 +172,12 @@ export default function LandingNavbar() {
             </span>
           </button>
 
-          <div className="hidden sm:flex items-center gap-2">
+          <div className="flex items-center gap-1.5 sm:gap-2">
             {token ? (
               <button
                 type="button"
                 onClick={() => navigate(dashboardPath)}
-                className="wd-mono text-xs font-bold px-4 py-2 flex items-center gap-1.5 cursor-pointer shadow-xs"
+                className="wd-mono text-xs font-bold px-3 sm:px-4 py-1.5 sm:py-2 flex items-center gap-1.5 cursor-pointer shadow-xs"
                 style={{ background: t.accent, color: t.accentText, border: 'none' }}
               >
                 DASHBOARD <ArrowRight size={13} />
@@ -202,7 +187,7 @@ export default function LandingNavbar() {
                 <button
                   type="button"
                   onClick={() => navigate('/login')}
-                  className="wd-mono text-xs font-semibold px-3 py-1.5 transition-colors cursor-pointer"
+                  className="wd-mono text-xs font-semibold px-2 sm:px-3 py-1.5 transition-colors cursor-pointer"
                   style={{ color: t.text }}
                   onMouseEnter={(e) => (e.currentTarget.style.color = t.accent)}
                   onMouseLeave={(e) => (e.currentTarget.style.color = t.text)}
@@ -216,7 +201,7 @@ export default function LandingNavbar() {
                   onClick={() => navigate('/register')}
                   onMouseEnter={handleMouseEnter}
                   onMouseLeave={handleMouseLeave}
-                  className="relative overflow-hidden wd-mono text-xs font-bold px-4 py-2 flex items-center gap-2 cursor-pointer select-none"
+                  className="relative overflow-hidden wd-mono text-xs font-bold px-3 sm:px-4 py-1.5 sm:py-2 flex items-center gap-1.5 sm:gap-2 cursor-pointer select-none"
                   style={{
                     border: `1px solid ${t.accent}`,
                     background: 'transparent',
@@ -234,9 +219,9 @@ export default function LandingNavbar() {
                     }}
                   />
 
-                  <span className="relative z-10 flex items-center gap-1.5 tracking-wider font-extrabold">
+                  <span className="relative z-10 flex items-center gap-1 sm:gap-1.5 tracking-wider font-extrabold text-[11px] sm:text-xs">
                     GET STARTED
-                    <ArrowRight size={14} strokeWidth={2.75} />
+                    <ArrowRight size={13} strokeWidth={2.75} />
                   </span>
                 </button>
               </>

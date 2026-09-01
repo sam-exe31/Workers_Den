@@ -209,16 +209,7 @@ function TopBar({ t, navigate }) {
           ))}
         </nav>
 
-        <div className="flex items-center gap-2.5">
-          <button
-            onClick={() => navigate(-1)}
-            className="wd-mono text-[11px] font-bold uppercase tracking-wider px-3 py-2 cursor-pointer flex items-center gap-1.5 border"
-            style={{ borderColor: t.border, color: t.text, background: t.surface }}
-            title="Go to previous page"
-          >
-            <ArrowLeft size={13} /> Go back
-          </button>
-
+        <div className="flex items-center gap-2 sm:gap-2.5">
           {token ? (
             <button
               onClick={() => navigate(dashboardPath)}
@@ -231,7 +222,7 @@ function TopBar({ t, navigate }) {
             <>
               <button
                 onClick={() => navigate('/login')}
-                className="hidden sm:inline wd-mono text-[11px] font-bold uppercase tracking-wider px-3 py-2 cursor-pointer hover:opacity-70"
+                className="wd-mono text-[11px] font-bold uppercase tracking-wider px-2.5 sm:px-3 py-2 cursor-pointer hover:opacity-70"
                 style={{ color: t.text }}
               >
                 Log in
