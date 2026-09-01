@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../../theme/ThemeContext';
 import api from '../../../api/axiosClient';
+import getMediaUrl from '../../../utils/mediaUrl';
 import Logo from '../../Component/Logo';
 import { LOCALITIES } from '../../../constants/localities';
 import {
@@ -557,7 +558,7 @@ export default function WorkerSetupFlow() {
               >
                 {profileImage ? (
                   <img
-                    src={profileImage}
+                    src={getMediaUrl(profileImage)}
                     alt="Preview"
                     className="w-20 h-20 rounded-full object-cover border-2 shadow-sm"
                     style={{ borderColor: t.accent }}

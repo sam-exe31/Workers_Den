@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../theme/ThemeContext'; // Adjust path if needed
-import { ArrowRight, Menu, X, Wrench, GitCommit, Users2, BookOpen } from 'lucide-react';
+import { ArrowRight, ArrowLeft, Menu, X, Wrench, GitCommit, Users2, BookOpen } from 'lucide-react';
 import Logo from './Logo';
 
 export default function LandingNavbar() {
@@ -63,6 +63,17 @@ export default function LandingNavbar() {
 
   ];
 
+  const token = localStorage.getItem('token');
+  const userStr = localStorage.getItem('user');
+  let dashboardPath = '/customer/dashboard';
+  if (userStr) {
+    try {
+      const u = JSON.parse(userStr);
+      const r = u?.role ? u.role.replace('ROLE_', '') : '';
+      if (r === 'WORKER') dashboardPath = '/worker/dashboard';
+    } catch {}
+  }
+
   return (
     <header
       className="sticky top-0 z-50 w-full backdrop-blur-md transition-colors duration-150"
@@ -79,7 +90,6 @@ export default function LandingNavbar() {
         >
           <Logo className="flex items-center justify-center transition-transform duration-150 group-hover:scale-95 shadow-sm" />
 
-
           <div className="flex flex-col">
             <span
               className="wd-display text-base sm:text-lg font-black tracking-tight leading-none"
@@ -93,7 +103,7 @@ export default function LandingNavbar() {
         </div>
 
         <nav className="hidden md:flex items-center gap-2.5 wd-mono text-xs">
-          {navLinks.map(({ label, href, Icon, About }) => (
+          {navLinks.map(({ label, href, Icon }) => (
             <a
               key={label}
               href={href}
@@ -126,6 +136,21 @@ export default function LandingNavbar() {
         </nav>
 
         <div className="flex items-center gap-3">
+          <button
+            type="button"
+            onClick={() => navigate(-1)}
+            className="wd-mono flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold border cursor-pointer transition-colors"
+            style={{
+              borderColor: t.border,
+              background: mode === 'light' ? '#FBFAFC' : '#171D2A',
+              color: t.text,
+            }}
+            title="Go to previous page"
+          >
+            <ArrowLeft size={13} />
+            <span className="hidden sm:inline">GO BACK</span>
+          </button>
+
           <button
             type="button"
             onClick={() => setMode(mode === 'light' ? 'dark' : 'light')}
@@ -163,46 +188,59 @@ export default function LandingNavbar() {
           </button>
 
           <div className="hidden sm:flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => navigate('/login')}
-              className="wd-mono text-xs font-semibold px-3 py-1.5 transition-colors cursor-pointer"
-              style={{ color: t.text }}
-              onMouseEnter={(e) => (e.currentTarget.style.color = t.accent)}
-              onMouseLeave={(e) => (e.currentTarget.style.color = t.text)}
-            >
-              LOG IN
-            </button>
+            {token ? (
+              <button
+                type="button"
+                onClick={() => navigate(dashboardPath)}
+                className="wd-mono text-xs font-bold px-4 py-2 flex items-center gap-1.5 cursor-pointer shadow-xs"
+                style={{ background: t.accent, color: t.accentText, border: 'none' }}
+              >
+                DASHBOARD <ArrowRight size={13} />
+              </button>
+            ) : (
+              <>
+                <button
+                  type="button"
+                  onClick={() => navigate('/login')}
+                  className="wd-mono text-xs font-semibold px-3 py-1.5 transition-colors cursor-pointer"
+                  style={{ color: t.text }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = t.accent)}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = t.text)}
+                >
+                  LOG IN
+                </button>
 
-            <button
-              ref={btnRef}
-              type="button"
-              onClick={() => navigate('/register')}
-              onMouseEnter={handleMouseEnter}
-              onMouseLeave={handleMouseLeave}
-              className="relative overflow-hidden wd-mono text-xs font-bold px-4 py-2 flex items-center gap-2 cursor-pointer select-none"
-              style={{
-                border: `1px solid ${t.accent}`,
-                background: 'transparent',
-                color: isLit ? t.accentText : t.accent,
-                transition: 'color 200ms ease',
-              }}
-            >
-              <span
-                className="absolute inset-0 pointer-events-none"
-                style={{
-                  background: t.accent,
-                  transform: getTransform(),
-                  transition: 'transform 260ms cubic-bezier(0.25, 1, 0.5, 1)',
-                  zIndex: 0,
-                }}
-              />
+                <button
+                  ref={btnRef}
+                  type="button"
+                  onClick={() => navigate('/register')}
+                  onMouseEnter={handleMouseEnter}
+                  onMouseLeave={handleMouseLeave}
+                  className="relative overflow-hidden wd-mono text-xs font-bold px-4 py-2 flex items-center gap-2 cursor-pointer select-none"
+                  style={{
+                    border: `1px solid ${t.accent}`,
+                    background: 'transparent',
+                    color: isLit ? t.accentText : t.accent,
+                    transition: 'color 200ms ease',
+                  }}
+                >
+                  <span
+                    className="absolute inset-0 pointer-events-none"
+                    style={{
+                      background: t.accent,
+                      transform: getTransform(),
+                      transition: 'transform 260ms cubic-bezier(0.25, 1, 0.5, 1)',
+                      zIndex: 0,
+                    }}
+                  />
 
-              <span className="relative z-10 flex items-center gap-1.5 tracking-wider font-extrabold">
-                GET STARTED
-                <ArrowRight size={14} strokeWidth={2.75} />
-              </span>
-            </button>
+                  <span className="relative z-10 flex items-center gap-1.5 tracking-wider font-extrabold">
+                    GET STARTED
+                    <ArrowRight size={14} strokeWidth={2.75} />
+                  </span>
+                </button>
+              </>
+            )}
           </div>
 
           <button

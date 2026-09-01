@@ -137,9 +137,15 @@ export default function Register() {
       <div className="flex-1 flex items-center justify-center px-4 py-12">
         <div className="w-full max-w-md border shadow-sm" style={{ background: t.surface, borderColor: t.borderStrong }}>
           <div className="flex items-center justify-between px-6 py-3 border-b" style={{ borderColor: t.border, background: t.cardHover }}>
-            <button type="button" onClick={() => navigate('/')} className="wd-mono text-[11px] font-bold flex items-center gap-1.5 cursor-pointer hover:opacity-70" style={{ color: t.muted }}>
-              <ArrowLeft size={13} /> Home
-            </button>
+            <div className="flex items-center gap-3">
+              <button type="button" onClick={() => navigate(-1)} className="wd-mono text-[11px] font-bold flex items-center gap-1 cursor-pointer hover:opacity-70" style={{ color: t.muted }}>
+                <ArrowLeft size={13} /> Back
+              </button>
+              <span style={{ color: t.border }}>|</span>
+              <button type="button" onClick={() => navigate('/')} className="wd-mono text-[11px] font-bold flex items-center gap-1 cursor-pointer hover:opacity-70" style={{ color: t.muted }}>
+                Home
+              </button>
+            </div>
             <span className="wd-mono text-[10px] font-bold uppercase tracking-widest" style={{ color: t.faint }}>Form · Register</span>
           </div>
 

@@ -3,6 +3,7 @@ import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { useTheme } from '../../../theme/ThemeContext';
 import { useWorker } from '../../../context/WorkerContext';
 import api from '../../../api/axiosClient';
+import getMediaUrl from '../../../utils/mediaUrl';
 import Logo from './../../Component/Logo';
 import {
   LayoutDashboard,
@@ -239,7 +240,7 @@ export default function WorkerNavbar() {
               >
                 {(profile?.profileImage || profile?.profile_image) ? (
                   <img
-                    src={profile.profileImage || profile.profile_image}
+                    src={getMediaUrl(profile.profileImage || profile.profile_image)}
                     alt={firstName}
                     className="w-5 h-5 rounded-full object-cover border"
                     style={{ borderColor: t.accent }}

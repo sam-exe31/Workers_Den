@@ -1,6 +1,7 @@
 package org.example.workers_backend_services.Controller;
 
 import jakarta.validation.Valid;
+import java.util.Map;
 import org.example.workers_backend_services.Config.JwtUtil;
 import org.example.workers_backend_services.DTO.LoginRequestDTO;
 import org.example.workers_backend_services.DTO.LoginResponseDTO;
@@ -66,12 +67,19 @@ public class AuthController {
     }
 
     @PostMapping("/login")
-    public ResponseEntity<LoginResponseDTO> login(@Valid @RequestBody LoginRequestDTO dto) {
-        Users user = userRepository.findByEmail(dto.getEmail())
-                .orElseThrow(() -> new RuntimeException("Invalid email or password"));
+    public ResponseEntity<?> login(@Valid @RequestBody LoginRequestDTO dto) {
+        String email = dto.getEmail() != null ? dto.getEmail().trim() : "";
+        Users user = userRepository.findByEmail(email).orElse(null);
+        if (user == null && dto.getEmail() != null) {
 
-        if (!passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
-            throw new RuntimeException("Invalid email or password");
+            user = userRepository.findAll().stream()
+                    .filter(u -> u.getEmail() != null && u.getEmail().equalsIgnoreCase(email))
+                    .findFirst()
+                    .orElse(null);
+        }
+
+        if (user == null || !passwordEncoder.matches(dto.getPassword(), user.getPassword())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Invalid email or password"));
         }
 
         String token = jwtUtil.generateToken(user.getEmail(), user.getRole().name(), user.getUser_id());

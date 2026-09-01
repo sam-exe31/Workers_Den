@@ -33,22 +33,36 @@ public class Worker_profile_services {
         }
 
         Worker_profile profile = workerProfileRepository.findByUser_Email(userEmail)
-                .orElseGet(() -> Worker_profile.builder().user(user).build());
+                .orElseGet(() -> Worker_profile.builder().user(user).locality("").build());
 
-        profile.setBio(dto.getBio());
-        profile.setExperience(dto.getExperience());
-        profile.setProfileImage(dto.getProfileImage());
-        profile.setLocality(dto.getLocality());
-        profile.setIsAvailable(dto.getIsAvailable() != null ? dto.getIsAvailable() : true);
-        profile.setMaxCapacity(dto.getMaxCapacity() != null ? dto.getMaxCapacity() : 3);
+        if (dto.getBio() != null) profile.setBio(dto.getBio());
+        if (dto.getExperience() != null) profile.setExperience(dto.getExperience());
+        if (dto.getProfileImage() != null) profile.setProfileImage(dto.getProfileImage());
+        if (dto.getLocality() != null) profile.setLocality(dto.getLocality());
+        profile.setIsAvailable(dto.getIsAvailable() != null ? dto.getIsAvailable() : (profile.getIsAvailable() != null ? profile.getIsAvailable() : true));
+        profile.setMaxCapacity(dto.getMaxCapacity() != null ? dto.getMaxCapacity() : (profile.getMaxCapacity() != null ? profile.getMaxCapacity() : 3));
 
         Worker_profile saved = workerProfileRepository.save(profile);
         return mapToDTO(saved);
     }
 
+    @Transactional
     public Worker_profileresponseDTO getMyProfile(String userEmail) {
+        Users user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new RuntimeException("User not found: " + userEmail));
+
         Worker_profile profile = workerProfileRepository.findByUser_Email(userEmail)
-                .orElseThrow(() -> new RuntimeException("Worker profile not found for user: " + userEmail));
+                .orElseGet(() -> {
+                    Worker_profile newProfile = Worker_profile.builder()
+                            .user(user)
+                            .locality("")
+                            .isAvailable(true)
+                            .maxCapacity(3)
+                            .rating(0.0)
+                            .completedJobs(0)
+                            .build();
+                    return workerProfileRepository.save(newProfile);
+                });
         return mapToDTO(profile);
     }
 

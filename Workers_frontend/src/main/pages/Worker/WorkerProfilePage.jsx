@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../../theme/ThemeContext';
 import api from '../../../api/axiosClient';
+import getMediaUrl from '../../../utils/mediaUrl';
 import WorkerNavbar from './WorkerNavbar';
 import { LOCALITIES } from '../../../constants/localities';
 import { CheckCircle2, AlertCircle, Star, ShieldCheck, Camera, Trash2, AlertTriangle, X, Upload } from 'lucide-react';
@@ -300,7 +301,7 @@ export default function WorkerProfilePage() {
               <div className="relative shrink-0">
                 {profileImage ? (
                   <img
-                    src={profileImage}
+                    src={getMediaUrl(profileImage)}
                     alt={userName}
                     className="w-20 h-20 rounded-full object-cover border-2 shadow-sm"
                     style={{ borderColor: t.accent }}

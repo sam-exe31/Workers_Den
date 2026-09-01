@@ -2,6 +2,7 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { useTheme } from '../../../theme/ThemeContext';
 import api from '../../../api/axiosClient';
+import getMediaUrl from '../../../utils/mediaUrl';
 import CustomerNavbar from '../Customer/CustomerNavbar';
 import WorkerNavbar from '../Worker/WorkerNavbar';
 import { ReviewForm, StarRating } from '../../Component/Reviews';
@@ -175,7 +176,7 @@ export default function JobDetailsPage() {
             <div className="flex items-start gap-2.5">
               {!isWorker && job.workerProfileImage ? (
                 <img
-                  src={job.workerProfileImage}
+                  src={getMediaUrl(job.workerProfileImage)}
                   alt={job.workerName || 'Worker'}
                   className="w-8 h-8 rounded-full object-cover border shrink-0 mt-0.5"
                   style={{ borderColor: t.border }}
@@ -204,11 +205,11 @@ export default function JobDetailsPage() {
                 {(job.photos || job.imageUrls).map((imgSrc, idx) => (
                   <div
                     key={idx}
-                    onClick={() => setZoomPhoto(imgSrc)}
+                    onClick={() => setZoomPhoto(getMediaUrl(imgSrc))}
                     className="w-24 h-24 border overflow-hidden cursor-pointer hover:opacity-90 transition-opacity relative group"
                     style={{ borderColor: t.border }}
                   >
-                    <img src={imgSrc} alt={`Attachment ${idx + 1}`} className="w-full h-full object-cover" />
+                    <img src={getMediaUrl(imgSrc)} alt={`Attachment ${idx + 1}`} className="w-full h-full object-cover" />
                     <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 flex items-center justify-center text-white wd-mono text-[10px] font-bold transition-opacity">
                       Zoom 🔍
                     </div>

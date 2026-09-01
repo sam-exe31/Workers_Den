@@ -3,6 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../../theme/ThemeContext';
 import { useWorker } from '../../../context/WorkerContext';
 import api from '../../../api/axiosClient';
+import getMediaUrl from '../../../utils/mediaUrl';
 import WorkerNavbar from './WorkerNavbar';
 import {
   MapPin,
@@ -62,7 +63,7 @@ function JobCard({ job, profile, onView, t }) {
       {photosList.length > 0 ? (
         <div className="flex sm:flex-col gap-1.5 shrink-0">
           <img
-            src={photosList[0]}
+            src={getMediaUrl(photosList[0])}
             alt="Issue photo"
             className="w-20 h-20 rounded border object-cover group-hover:scale-105 transition-transform"
             style={{ borderColor: t.border }}

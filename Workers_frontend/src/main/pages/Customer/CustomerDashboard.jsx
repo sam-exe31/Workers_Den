@@ -2,6 +2,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useTheme } from '../../../theme/ThemeContext';
 import api from '../../../api/axiosClient';
+import getMediaUrl from '../../../utils/mediaUrl';
 import CustomerNavbar from './CustomerNavbar';
 import { filterOutDeletedRequests } from '../../../utils/deletedRequests';
 import {
@@ -493,7 +494,7 @@ export default function CustomerDashboard() {
                         <div className="flex items-center gap-4">
                           {activeJob.workerProfileImage ? (
                             <img
-                              src={activeJob.workerProfileImage}
+                              src={getMediaUrl(activeJob.workerProfileImage)}
                               alt={activeJob.workerName || 'Worker'}
                               className="w-14 h-14 rounded-full object-cover border-2 shrink-0"
                               style={{ borderColor: t.accent }}

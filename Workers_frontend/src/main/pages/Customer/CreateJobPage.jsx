@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import { useTheme } from '../../../theme/ThemeContext';
 import api from '../../../api/axiosClient';
+import getMediaUrl from '../../../utils/mediaUrl';
 import CustomerNavbar from './CustomerNavbar';
 import { LOCALITIES } from '../../../constants/localities';
 import {
@@ -488,7 +489,7 @@ export default function CreateJobPage() {
                   <div className="grid grid-cols-3 sm:grid-cols-5 gap-2.5">
                     {photos.map((src, i) => (
                       <div key={i} className="relative aspect-square border overflow-hidden group" style={{ borderColor: t.border }}>
-                        <img src={src} alt={`Attachment ${i + 1}`} className="w-full h-full object-cover" />
+                        <img src={getMediaUrl(src)} alt={`Attachment ${i + 1}`} className="w-full h-full object-cover" />
                         <button
                           type="button"
                           onClick={() => removePhoto(i)}

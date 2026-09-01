@@ -6,6 +6,7 @@ import { useTheme } from '../../theme/ThemeContext';
 import Logo from '../Component/Logo';
 import {
   ArrowRight,
+  ArrowLeft,
   ShieldCheck,
   Zap,
   Clock,
@@ -168,6 +169,17 @@ function StarRow({ rating, t, size = 13 }) {
 
 
 function TopBar({ t, navigate }) {
+  const token = localStorage.getItem('token');
+  const userStr = localStorage.getItem('user');
+  let dashboardPath = '/customer/dashboard';
+  if (userStr) {
+    try {
+      const u = JSON.parse(userStr);
+      const r = u?.role ? u.role.replace('ROLE_', '') : '';
+      if (r === 'WORKER') dashboardPath = '/worker/dashboard';
+    } catch {}
+  }
+
   const links = [
     { label: 'How it works', href: '#how-it-works' },
     { label: 'Jobs', href: '#jobs' },
@@ -199,15 +211,36 @@ function TopBar({ t, navigate }) {
 
         <div className="flex items-center gap-2.5">
           <button
-            onClick={() => navigate('/login')}
-            className="hidden sm:inline wd-mono text-[11px] font-bold uppercase tracking-wider px-3 py-2 cursor-pointer hover:opacity-70"
-            style={{ color: t.text }}
+            onClick={() => navigate(-1)}
+            className="wd-mono text-[11px] font-bold uppercase tracking-wider px-3 py-2 cursor-pointer flex items-center gap-1.5 border"
+            style={{ borderColor: t.border, color: t.text, background: t.surface }}
+            title="Go to previous page"
           >
-            Log in
+            <ArrowLeft size={13} /> Go back
           </button>
-          <CTA variant="solid" onClick={() => navigate('/register?role=CUSTOMER')} t={t}>
-            Post a job
-          </CTA>
+
+          {token ? (
+            <button
+              onClick={() => navigate(dashboardPath)}
+              className="wd-mono text-[11px] font-bold uppercase tracking-wider px-3.5 py-2 cursor-pointer border shadow-sm"
+              style={{ background: t.accent, color: t.accentText, borderColor: t.accent }}
+            >
+              Dashboard
+            </button>
+          ) : (
+            <>
+              <button
+                onClick={() => navigate('/login')}
+                className="hidden sm:inline wd-mono text-[11px] font-bold uppercase tracking-wider px-3 py-2 cursor-pointer hover:opacity-70"
+                style={{ color: t.text }}
+              >
+                Log in
+              </button>
+              <CTA variant="solid" onClick={() => navigate('/register?role=CUSTOMER')} t={t}>
+                Post a job
+              </CTA>
+            </>
+          )}
         </div>
       </div>
     </header>
@@ -539,19 +572,6 @@ export default function Home() {
   const { theme: t } = useTheme();
   const [jobs, setJobs] = useState([]);
   const [activeReview, setActiveReview] = useState(null);
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    const userStr = localStorage.getItem('user');
-    if (token && userStr) {
-      try {
-        const u = JSON.parse(userStr);
-        const role = u?.role ? u.role.replace('ROLE_', '') : '';
-        const targetPath = role === 'WORKER' ? '/worker/dashboard' : '/customer/dashboard';
-        navigate(targetPath, { replace: true });
-        return;
-      } catch { }
-    }
-  }, [navigate]);
 
   useEffect(() => {
     // Fetch live categories from DB
