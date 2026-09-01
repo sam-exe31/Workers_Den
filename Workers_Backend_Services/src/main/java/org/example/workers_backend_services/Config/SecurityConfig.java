@@ -62,6 +62,7 @@ public class SecurityConfig {
                         .requestMatchers("/uploads/**").permitAll()
                         .requestMatchers("/api/uploads/**").permitAll()
                         .requestMatchers(HttpMethod.GET, "/api/Categories/**").permitAll()
+                        .requestMatchers("/health").permitAll()
 
                         // 3. User registration endpoint
                         .requestMatchers(HttpMethod.POST, "/api/users").permitAll()
