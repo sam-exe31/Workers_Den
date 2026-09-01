@@ -109,6 +109,8 @@ export default function WorkerSetupFlow() {
   const [bio, setBio] = useState('');
   const [profileImage, setProfileImage] = useState('');
   const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
 
   // Handle Photo selection & upload to Spring Boot /api/uploads/photo
   const handlePhotoUpload = async (e) => {
@@ -216,20 +218,46 @@ export default function WorkerSetupFlow() {
       >
         {/* Card header */}
         <div
-          className="flex items-center justify-between px-7 py-4 border-b"
+          className="flex items-center justify-between px-7 py-4 border-b gap-2"
           style={{ borderColor: t.border, background: t.cardHover }}
         >
-          <Logo size={24} accentColor={t.accent} textColor={t.text} />
-          {step > 0 && step < 8 && (
-            <span className="wd-mono text-[10px] font-bold uppercase tracking-widest" style={{ color: t.muted }}>
-              Worker setup
-            </span>
-          )}
-          {step === 8 && (
-            <span className="wd-mono text-[10px] font-bold uppercase tracking-widest" style={{ color: t.success }}>
-              ✓ Profile ready
-            </span>
-          )}
+          <div className="flex items-center gap-3">
+            <Logo size={24} accentColor={t.accent} textColor={t.text} />
+            {step > 0 && step < 8 && (
+              <span className="wd-mono text-[10px] font-bold uppercase tracking-widest hidden sm:inline" style={{ color: t.muted }}>
+                Worker setup
+              </span>
+            )}
+            {step === 8 && (
+              <span className="wd-mono text-[10px] font-bold uppercase tracking-widest hidden sm:inline" style={{ color: t.success }}>
+                ✓ Profile ready
+              </span>
+            )}
+          </div>
+
+          <div className="flex items-center gap-2 wd-mono text-xs">
+            <button
+              type="button"
+              onClick={() => navigate('/customer/dashboard')}
+              className="px-2.5 py-1 border cursor-pointer hover:opacity-80"
+              style={{ borderColor: t.border, color: t.muted, background: 'transparent' }}
+              title="Go to customer view"
+            >
+              Customer view
+            </button>
+            <button
+              type="button"
+              onClick={() => {
+                localStorage.clear();
+                navigate('/login', { replace: true });
+              }}
+              className="px-2.5 py-1 border cursor-pointer font-bold hover:opacity-80"
+              style={{ borderColor: t.stamp, color: t.stamp, background: 'transparent' }}
+              title="Log out of current account"
+            >
+              Log out
+            </button>
+          </div>
         </div>
 
         {/* Card body */}
