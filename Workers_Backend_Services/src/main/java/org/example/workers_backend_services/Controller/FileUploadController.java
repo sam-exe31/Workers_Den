@@ -2,6 +2,8 @@ package org.example.workers_backend_services.Controller;
 
 import com.cloudinary.Cloudinary;
 import com.cloudinary.utils.ObjectUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +17,8 @@ import java.util.UUID;
 @RequestMapping("/api/uploads")
 @CrossOrigin(originPatterns = "*", allowCredentials = "true")
 public class FileUploadController {
+
+    private static final Logger log = LoggerFactory.getLogger(FileUploadController.class);
 
     private final Cloudinary cloudinary;
 
@@ -46,8 +50,14 @@ public class FileUploadController {
                     "path", secureUrl
             ));
         } catch (IOException e) {
+            log.error("IO error during file upload: {}", e.getMessage(), e);
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("message", "Failed to read the uploaded file: " + e.getMessage()));
+        } catch (Exception e) {
+            log.error("Cloudinary upload failed: {}", e.getMessage(), e);
             return ResponseEntity.internalServerError()
                     .body(Map.of("message", "Failed to upload file to cloud storage: " + e.getMessage()));
         }
     }
-}
+}
+
