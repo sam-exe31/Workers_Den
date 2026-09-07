@@ -12,7 +12,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Worker_category {
+public class Workercategory {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -20,7 +20,7 @@ public class Worker_category {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "worker_id", nullable = false)
-    private Worker_profile workerProfile;
+    private Workerprofile workerProfile;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cat_id", nullable = false)

@@ -8,7 +8,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class Worker_profilerequestDTO {
+public class WorkerprofilerequestDTO {
 
     private String bio;
 

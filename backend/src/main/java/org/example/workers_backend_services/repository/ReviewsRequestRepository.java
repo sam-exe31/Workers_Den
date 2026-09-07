@@ -10,7 +10,7 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface Reviews_Request_Repository extends JpaRepository<Reviews, Long> {
+public interface ReviewsRequestRepository extends JpaRepository<Reviews, Long> {
     Optional<Reviews> findByServiceRequest_Id(Long requestId);
     List<Reviews> findByWorker_Id(Long workerId);
 

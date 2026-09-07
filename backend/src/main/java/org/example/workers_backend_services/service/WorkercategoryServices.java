@@ -1,14 +1,14 @@
 package org.example.workers_backend_services.service;
 
-import org.example.workers_backend_services.dto.Worker_categoryrequestDTO;
-import org.example.workers_backend_services.dto.Worker_categoryresponseDTO;
+import org.example.workers_backend_services.dto.WorkercategoryrequestDTO;
+import org.example.workers_backend_services.dto.WorkercategoryresponseDTO;
 import org.example.workers_backend_services.entity.Category;
-import org.example.workers_backend_services.entity.Worker_category;
-import org.example.workers_backend_services.entity.Worker_profile;
+import org.example.workers_backend_services.entity.Workercategory;
+import org.example.workers_backend_services.entity.Workerprofile;
 import org.example.workers_backend_services.exception.ResourceNotFoundException;
 import org.example.workers_backend_services.repository.CategoryRepository;
-import org.example.workers_backend_services.repository.Worker_category_Repository;
-import org.example.workers_backend_services.repository.Worker_profileRepository;
+import org.example.workers_backend_services.repository.WorkercategoryRepository;
+import org.example.workers_backend_services.repository.WorkerprofileRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,33 +17,33 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class Worker_category_Services {
+public class WorkercategoryServices {
 
     @Autowired
-    private Worker_category_Repository workerCategoryRepository;
+    private WorkercategoryRepository workerCategoryRepository;
 
     @Autowired
-    private Worker_profileRepository workerProfileRepository;
+    private WorkerprofileRepository workerProfileRepository;
 
     @Autowired
     private CategoryRepository categoryRepository;
 
     @Transactional
-    public Worker_categoryresponseDTO addSkill(String userEmail, Worker_categoryrequestDTO dto) {
-        Worker_profile worker = workerProfileRepository.findByUser_Email(userEmail)
+    public WorkercategoryresponseDTO addSkill(String userEmail, WorkercategoryrequestDTO dto) {
+        Workerprofile worker = workerProfileRepository.findByUser_Email(userEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("Worker profile not found for: " + userEmail));
 
         Category category = categoryRepository.findById(dto.getCategoryId())
                 .orElseThrow(() -> new ResourceNotFoundException("Category not found with ID: " + dto.getCategoryId()));
 
-        Worker_category mapping = workerCategoryRepository.findByWorkerProfile_IdAndCategory_Id(worker.getId(), category.getId())
-                .orElseGet(() -> Worker_category.builder()
+        Workercategory mapping = workerCategoryRepository.findByWorkerProfile_IdAndCategory_Id(worker.getId(), category.getId())
+                .orElseGet(() -> Workercategory.builder()
                         .workerProfile(worker)
                         .category(category)
                         .build());
 
-        Worker_category saved = workerCategoryRepository.save(mapping);
-        return Worker_categoryresponseDTO.builder()
+        Workercategory saved = workerCategoryRepository.save(mapping);
+        return WorkercategoryresponseDTO.builder()
                 .id(saved.getId())
                 .workerId(saved.getWorkerProfile().getId())
                 .categoryId(saved.getCategory().getId())
@@ -51,12 +51,12 @@ public class Worker_category_Services {
                 .build();
     }
 
-    public List<Worker_categoryresponseDTO> getMySkills(String userEmail) {
-        Worker_profile worker = workerProfileRepository.findByUser_Email(userEmail)
+    public List<WorkercategoryresponseDTO> getMySkills(String userEmail) {
+        Workerprofile worker = workerProfileRepository.findByUser_Email(userEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("Worker profile not found for: " + userEmail));
 
         return workerCategoryRepository.findByWorkerProfile_Id(worker.getId()).stream()
-                .map(m -> Worker_categoryresponseDTO.builder()
+                .map(m -> WorkercategoryresponseDTO.builder()
                         .id(m.getId())
                         .workerId(m.getWorkerProfile().getId())
                         .categoryId(m.getCategory().getId())
@@ -67,7 +67,7 @@ public class Worker_category_Services {
 
     @Transactional
     public void removeSkill(String userEmail, Long categoryId) {
-        Worker_profile worker = workerProfileRepository.findByUser_Email(userEmail)
+        Workerprofile worker = workerProfileRepository.findByUser_Email(userEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("Worker profile not found for: " + userEmail));
         workerCategoryRepository.deleteByWorkerProfile_IdAndCategory_Id(worker.getId(), categoryId);
     }

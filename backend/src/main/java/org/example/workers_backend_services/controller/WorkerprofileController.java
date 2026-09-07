@@ -1,9 +1,9 @@
 package org.example.workers_backend_services.controller;
 
 import jakarta.validation.Valid;
-import org.example.workers_backend_services.dto.Worker_profilerequestDTO;
-import org.example.workers_backend_services.dto.Worker_profileresponseDTO;
-import org.example.workers_backend_services.service.Worker_profile_services;
+import org.example.workers_backend_services.dto.WorkerprofilerequestDTO;
+import org.example.workers_backend_services.dto.WorkerprofileresponseDTO;
+import org.example.workers_backend_services.service.Workerprofileservices;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -14,32 +14,32 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/workers")
-public class Worker_profile_Controller {
+public class WorkerprofileController {
 
     @Autowired
-    private Worker_profile_services workerProfileServices;
+    private Workerprofileservices workerProfileServices;
 
     @PostMapping("/profile")
     @PreAuthorize("hasRole('WORKER')")
-    public ResponseEntity<Worker_profileresponseDTO> saveProfile(
+    public ResponseEntity<WorkerprofileresponseDTO> saveProfile(
             @AuthenticationPrincipal String email,
-            @Valid @RequestBody Worker_profilerequestDTO dto) {
+            @Valid @RequestBody WorkerprofilerequestDTO dto) {
         return ResponseEntity.ok(workerProfileServices.createOrUpdateProfile(email, dto));
     }
 
     @GetMapping("/me")
     @PreAuthorize("hasRole('WORKER')")
-    public ResponseEntity<Worker_profileresponseDTO> getMyProfile(@AuthenticationPrincipal String email) {
+    public ResponseEntity<WorkerprofileresponseDTO> getMyProfile(@AuthenticationPrincipal String email) {
         return ResponseEntity.ok(workerProfileServices.getMyProfile(email));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Worker_profileresponseDTO> getProfileById(@PathVariable Long id) {
+    public ResponseEntity<WorkerprofileresponseDTO> getProfileById(@PathVariable Long id) {
         return ResponseEntity.ok(workerProfileServices.getProfileById(id));
     }
 
     @GetMapping
-    public ResponseEntity<List<Worker_profileresponseDTO>> getAllProfiles() {
+    public ResponseEntity<List<WorkerprofileresponseDTO>> getAllProfiles() {
         return ResponseEntity.ok(workerProfileServices.getAllProfiles());
     }
 }

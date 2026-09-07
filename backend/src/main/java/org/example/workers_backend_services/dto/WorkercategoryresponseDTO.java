@@ -7,7 +7,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Worker_categoryresponseDTO {
+public class WorkercategoryresponseDTO {
     private Long id;
     private Long workerId;
     private Long categoryId;

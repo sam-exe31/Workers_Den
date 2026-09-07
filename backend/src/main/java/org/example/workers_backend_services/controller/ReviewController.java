@@ -3,7 +3,7 @@ package org.example.workers_backend_services.controller;
 import jakarta.validation.Valid;
 import org.example.workers_backend_services.dto.ReviewRequestDTO;
 import org.example.workers_backend_services.dto.ReviewResponseDTO;
-import org.example.workers_backend_services.service.Review_Services;
+import org.example.workers_backend_services.service.ReviewServices;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -15,10 +15,10 @@ import java.util.List;
 
 @RestController
 @RequestMapping("/api/reviews")
-public class Review_Controller {
+public class ReviewController {
 
     @Autowired
-    private Review_Services reviewServices;
+    private ReviewServices reviewServices;
 
     @PostMapping
     @PreAuthorize("hasRole('CUSTOMER')")

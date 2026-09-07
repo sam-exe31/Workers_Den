@@ -30,7 +30,7 @@ public class Service_request {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "worker_id")
-    private Worker_profile worker;
+    private Workerprofile worker;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cat_id", nullable = false)

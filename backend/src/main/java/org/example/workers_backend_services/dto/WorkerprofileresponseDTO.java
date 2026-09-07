@@ -7,7 +7,7 @@ import lombok.*;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Worker_profileresponseDTO {
+public class WorkerprofileresponseDTO {
     private Long workerId;
     private Long userId;
     private String userName;

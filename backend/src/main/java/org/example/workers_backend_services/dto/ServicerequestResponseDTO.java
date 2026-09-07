@@ -13,7 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Service_requestResponseDTO {
+public class ServicerequestResponseDTO {
     private Long requestId;
     private Long customerId;
     private String customerName;

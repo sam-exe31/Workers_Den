@@ -32,7 +32,7 @@ public class Reviews {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "worker_id", nullable = false)
-    private Worker_profile worker;
+    private Workerprofile worker;
 
     @Column(nullable = false)
     private Double rating;

@@ -5,13 +5,13 @@ import org.example.workers_backend_services.dto.ReviewResponseDTO;
 import org.example.workers_backend_services.entity.Reviews;
 import org.example.workers_backend_services.entity.ServiceStatus;
 import org.example.workers_backend_services.entity.Service_request;
-import org.example.workers_backend_services.entity.Worker_profile;
+import org.example.workers_backend_services.entity.Workerprofile;
 import org.example.workers_backend_services.exception.InvalidJobStateException;
 import org.example.workers_backend_services.exception.ResourceNotFoundException;
 import org.example.workers_backend_services.exception.UnauthorizedActionException;
-import org.example.workers_backend_services.repository.Reviews_Request_Repository;
-import org.example.workers_backend_services.repository.Service_Request_Repository;
-import org.example.workers_backend_services.repository.Worker_profileRepository;
+import org.example.workers_backend_services.repository.ReviewsRequestRepository;
+import org.example.workers_backend_services.repository.ServiceRequestRepository;
+import org.example.workers_backend_services.repository.WorkerprofileRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -20,16 +20,16 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class Review_Services {
+public class ReviewServices {
 
     @Autowired
-    private Reviews_Request_Repository reviewsRepository;
+    private ReviewsRequestRepository reviewsRepository;
 
     @Autowired
-    private Service_Request_Repository serviceRequestRepository;
+    private ServiceRequestRepository serviceRequestRepository;
 
     @Autowired
-    private Worker_profileRepository workerProfileRepository;
+    private WorkerprofileRepository workerProfileRepository;
 
     @Transactional
     public ReviewResponseDTO submitReview(String customerEmail, ReviewRequestDTO dto) {
@@ -48,7 +48,7 @@ public class Review_Services {
             throw new InvalidJobStateException("A review has already been submitted for this job");
         }
 
-        Worker_profile worker = request.getWorker();
+        Workerprofile worker = request.getWorker();
 
         Reviews review = Reviews.builder()
                 .serviceRequest(request)

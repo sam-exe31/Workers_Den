@@ -1,6 +1,6 @@
 package org.example.workers_backend_services.repository;
 
-import org.example.workers_backend_services.entity.Worker_profile;
+import org.example.workers_backend_services.entity.Workerprofile;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -10,13 +10,13 @@ import java.util.List;
 import java.util.Optional;
 
 @Repository
-public interface Worker_profileRepository extends JpaRepository<Worker_profile, Long> {
+public interface WorkerprofileRepository extends JpaRepository<Workerprofile, Long> {
 
     @Query("SELECT w FROM Worker_profile w WHERE w.user.email = :email")
-    Optional<Worker_profile> findByUser_Email(@Param("email") String email);
+    Optional<Workerprofile> findByUser_Email(@Param("email") String email);
 
     @Query("SELECT w FROM Worker_profile w WHERE w.user.user_id = :userId")
-    Optional<Worker_profile> findByUser_Id(@Param("userId") Long userId);
+    Optional<Workerprofile> findByUser_Id(@Param("userId") Long userId);
 
-    List<Worker_profile> findByLocalityAndIsAvailableTrue(String locality);
+    List<Workerprofile> findByLocalityAndIsAvailableTrue(String locality);
 }

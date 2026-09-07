@@ -10,7 +10,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface Service_Request_Repository extends JpaRepository<Service_request, Long> {
+public interface ServiceRequestRepository extends JpaRepository<Service_request, Long> {
 
     List<Service_request> findByCustomer_EmailOrderByCreatedAtDesc(String email);
 

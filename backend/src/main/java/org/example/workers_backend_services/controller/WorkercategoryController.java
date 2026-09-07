@@ -1,9 +1,9 @@
 package org.example.workers_backend_services.controller;
 
 import jakarta.validation.Valid;
-import org.example.workers_backend_services.dto.Worker_categoryrequestDTO;
-import org.example.workers_backend_services.dto.Worker_categoryresponseDTO;
-import org.example.workers_backend_services.service.Worker_category_Services;
+import org.example.workers_backend_services.dto.WorkercategoryrequestDTO;
+import org.example.workers_backend_services.dto.WorkercategoryresponseDTO;
+import org.example.workers_backend_services.service.WorkercategoryServices;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -15,20 +15,20 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/worker/skills")
 @PreAuthorize("hasRole('WORKER')")
-public class Worker_category_Controller {
+public class WorkercategoryController {
 
     @Autowired
-    private Worker_category_Services workerCategoryServices;
+    private WorkercategoryServices workerCategoryServices;
 
     @PostMapping
-    public ResponseEntity<Worker_categoryresponseDTO> addSkill(
+    public ResponseEntity<WorkercategoryresponseDTO> addSkill(
             @AuthenticationPrincipal String email,
-            @Valid @RequestBody Worker_categoryrequestDTO dto) {
+            @Valid @RequestBody WorkercategoryrequestDTO dto) {
         return ResponseEntity.ok(workerCategoryServices.addSkill(email, dto));
     }
 
     @GetMapping
-    public ResponseEntity<List<Worker_categoryresponseDTO>> getMySkills(@AuthenticationPrincipal String email) {
+    public ResponseEntity<List<WorkercategoryresponseDTO>> getMySkills(@AuthenticationPrincipal String email) {
         return ResponseEntity.ok(workerCategoryServices.getMySkills(email));
     }
 

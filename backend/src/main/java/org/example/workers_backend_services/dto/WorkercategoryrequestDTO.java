@@ -6,7 +6,7 @@ import lombok.Setter;
 
 @Getter
 @Setter
-public class Worker_categoryrequestDTO {
+public class WorkercategoryrequestDTO {
     @NotNull(message = "Category ID is required")
     private Long categoryId;
 }

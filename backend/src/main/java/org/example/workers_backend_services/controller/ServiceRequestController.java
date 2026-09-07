@@ -1,9 +1,9 @@
 package org.example.workers_backend_services.controller;
 
 import jakarta.validation.Valid;
-import org.example.workers_backend_services.dto.Service_requestRequestDTO;
-import org.example.workers_backend_services.dto.Service_requestResponseDTO;
-import org.example.workers_backend_services.service.Service_Request_interface;
+import org.example.workers_backend_services.dto.ServicerequestRequestDTO;
+import org.example.workers_backend_services.dto.ServicerequestResponseDTO;
+import org.example.workers_backend_services.service.ServiceRequestinterface;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,39 +16,39 @@ import java.util.List;
 @RestController
 @RequestMapping("/api/jobs")
 @CrossOrigin(originPatterns = "*", allowCredentials = "true")
-public class Service_Request_Controller {
+public class ServiceRequestController {
 
     @Autowired
-    private Service_Request_interface serviceRequestService;
+    private ServiceRequestinterface serviceRequestService;
 
     @PostMapping
     @PreAuthorize("hasRole('CUSTOMER')")
-    public ResponseEntity<Service_requestResponseDTO> createJob(
+    public ResponseEntity<ServicerequestResponseDTO> createJob(
             @AuthenticationPrincipal String email,
-            @Valid @RequestBody Service_requestRequestDTO dto) {
+            @Valid @RequestBody ServicerequestRequestDTO dto) {
         return ResponseEntity.status(HttpStatus.CREATED).body(serviceRequestService.createJob(email, dto));
     }
 
     @GetMapping("/customer/my-jobs")
     @PreAuthorize("hasRole('CUSTOMER')")
-    public ResponseEntity<List<Service_requestResponseDTO>> getCustomerJobs(@AuthenticationPrincipal String email) {
+    public ResponseEntity<List<ServicerequestResponseDTO>> getCustomerJobs(@AuthenticationPrincipal String email) {
         return ResponseEntity.ok(serviceRequestService.getMyCustomerJobs(email));
     }
 
     @GetMapping("/worker/available")
     @PreAuthorize("hasRole('WORKER')")
-    public ResponseEntity<List<Service_requestResponseDTO>> getAvailableJobs(@AuthenticationPrincipal String email) {
+    public ResponseEntity<List<ServicerequestResponseDTO>> getAvailableJobs(@AuthenticationPrincipal String email) {
         return ResponseEntity.ok(serviceRequestService.getAvailableJobsForWorker(email));
     }
 
     @GetMapping("/worker/my-jobs")
     @PreAuthorize("hasRole('WORKER')")
-    public ResponseEntity<List<Service_requestResponseDTO>> getWorkerJobs(@AuthenticationPrincipal String email) {
+    public ResponseEntity<List<ServicerequestResponseDTO>> getWorkerJobs(@AuthenticationPrincipal String email) {
         return ResponseEntity.ok(serviceRequestService.getMyWorkerJobs(email));
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Service_requestResponseDTO> getJobById(
+    public ResponseEntity<ServicerequestResponseDTO> getJobById(
             @PathVariable Long id,
             @AuthenticationPrincipal String email) {
         return ResponseEntity.ok(serviceRequestService.getJobById(id, email));
@@ -56,7 +56,7 @@ public class Service_Request_Controller {
 
     @PostMapping("/{id}/accept")
     @PreAuthorize("hasRole('WORKER')")
-    public ResponseEntity<Service_requestResponseDTO> acceptJob(
+    public ResponseEntity<ServicerequestResponseDTO> acceptJob(
             @PathVariable Long id,
             @AuthenticationPrincipal String email) {
         return ResponseEntity.ok(serviceRequestService.acceptJob(id, email));
@@ -64,7 +64,7 @@ public class Service_Request_Controller {
 
     @PostMapping("/{id}/start")
     @PreAuthorize("hasRole('WORKER')")
-    public ResponseEntity<Service_requestResponseDTO> startJob(
+    public ResponseEntity<ServicerequestResponseDTO> startJob(
             @PathVariable Long id,
             @AuthenticationPrincipal String email) {
         return ResponseEntity.ok(serviceRequestService.startJob(id, email));
@@ -72,14 +72,14 @@ public class Service_Request_Controller {
 
     @PostMapping("/{id}/complete")
     @PreAuthorize("hasRole('WORKER')")
-    public ResponseEntity<Service_requestResponseDTO> completeJob(
+    public ResponseEntity<ServicerequestResponseDTO> completeJob(
             @PathVariable Long id,
             @AuthenticationPrincipal String email) {
         return ResponseEntity.ok(serviceRequestService.completeJob(id, email));
     }
 
     @PostMapping("/{id}/cancel")
-    public ResponseEntity<Service_requestResponseDTO> cancelJob(
+    public ResponseEntity<ServicerequestResponseDTO> cancelJob(
             @PathVariable Long id,
             @AuthenticationPrincipal String email) {
         return ResponseEntity.ok(serviceRequestService.cancelJob(id, email));

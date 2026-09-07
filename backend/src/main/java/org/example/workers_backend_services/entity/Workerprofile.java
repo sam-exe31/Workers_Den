@@ -13,7 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class Worker_profile {
+public class Workerprofile {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -53,5 +53,5 @@ public class Worker_profile {
 
     @OneToMany(mappedBy = "workerProfile", cascade = CascadeType.ALL, orphanRemoval = true)
     @Builder.Default
-    private List<Worker_category> categories = new ArrayList<>();
+    private List<Workercategory> categories = new ArrayList<>();
 }

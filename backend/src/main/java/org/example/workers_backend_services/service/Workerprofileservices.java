@@ -1,12 +1,12 @@
 package org.example.workers_backend_services.service;
 
-import org.example.workers_backend_services.dto.Worker_profilerequestDTO;
-import org.example.workers_backend_services.dto.Worker_profileresponseDTO;
+import org.example.workers_backend_services.dto.WorkerprofilerequestDTO;
+import org.example.workers_backend_services.dto.WorkerprofileresponseDTO;
 import org.example.workers_backend_services.entity.Role;
 import org.example.workers_backend_services.entity.Users;
-import org.example.workers_backend_services.entity.Worker_profile;
+import org.example.workers_backend_services.entity.Workerprofile;
 import org.example.workers_backend_services.repository.UserRepository;
-import org.example.workers_backend_services.repository.Worker_profileRepository;
+import org.example.workers_backend_services.repository.WorkerprofileRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -15,16 +15,16 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class Worker_profile_services {
+public class Workerprofileservices {
 
     @Autowired
-    private Worker_profileRepository workerProfileRepository;
+    private WorkerprofileRepository workerProfileRepository;
 
     @Autowired
     private UserRepository userRepository;
 
     @Transactional
-    public Worker_profileresponseDTO createOrUpdateProfile(String userEmail, Worker_profilerequestDTO dto) {
+    public WorkerprofileresponseDTO createOrUpdateProfile(String userEmail, WorkerprofilerequestDTO dto) {
         Users user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new RuntimeException("User not found: " + userEmail));
 
@@ -32,8 +32,8 @@ public class Worker_profile_services {
             throw new RuntimeException("Only users with WORKER role can have a worker profile");
         }
 
-        Worker_profile profile = workerProfileRepository.findByUser_Email(userEmail)
-                .orElseGet(() -> Worker_profile.builder().user(user).locality("").build());
+        Workerprofile profile = workerProfileRepository.findByUser_Email(userEmail)
+                .orElseGet(() -> Workerprofile.builder().user(user).locality("").build());
 
         if (dto.getBio() != null) profile.setBio(dto.getBio());
         if (dto.getExperience() != null) profile.setExperience(dto.getExperience());
@@ -42,18 +42,18 @@ public class Worker_profile_services {
         profile.setIsAvailable(dto.getIsAvailable() != null ? dto.getIsAvailable() : (profile.getIsAvailable() != null ? profile.getIsAvailable() : true));
         profile.setMaxCapacity(dto.getMaxCapacity() != null ? dto.getMaxCapacity() : (profile.getMaxCapacity() != null ? profile.getMaxCapacity() : 3));
 
-        Worker_profile saved = workerProfileRepository.save(profile);
+        Workerprofile saved = workerProfileRepository.save(profile);
         return mapToDTO(saved);
     }
 
     @Transactional
-    public Worker_profileresponseDTO getMyProfile(String userEmail) {
+    public WorkerprofileresponseDTO getMyProfile(String userEmail) {
         Users user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new RuntimeException("User not found: " + userEmail));
 
-        Worker_profile profile = workerProfileRepository.findByUser_Email(userEmail)
+        Workerprofile profile = workerProfileRepository.findByUser_Email(userEmail)
                 .orElseGet(() -> {
-                    Worker_profile newProfile = Worker_profile.builder()
+                    Workerprofile newProfile = Workerprofile.builder()
                             .user(user)
                             .locality("")
                             .isAvailable(true)
@@ -66,20 +66,20 @@ public class Worker_profile_services {
         return mapToDTO(profile);
     }
 
-    public Worker_profileresponseDTO getProfileById(Long id) {
-        Worker_profile profile = workerProfileRepository.findById(id)
+    public WorkerprofileresponseDTO getProfileById(Long id) {
+        Workerprofile profile = workerProfileRepository.findById(id)
                 .orElseThrow(() -> new RuntimeException("Worker profile not found with ID: " + id));
         return mapToDTO(profile);
     }
 
-    public List<Worker_profileresponseDTO> getAllProfiles() {
+    public List<WorkerprofileresponseDTO> getAllProfiles() {
         return workerProfileRepository.findAll().stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
     }
 
-    private Worker_profileresponseDTO mapToDTO(Worker_profile profile) {
-        return Worker_profileresponseDTO.builder()
+    private WorkerprofileresponseDTO mapToDTO(Workerprofile profile) {
+        return WorkerprofileresponseDTO.builder()
                 .workerId(profile.getId())
                 .userId(profile.getUser().getUser_id())
                 .userName(profile.getUser().getUser_name())

@@ -1,7 +1,7 @@
 package org.example.workers_backend_services.service;
 
-import org.example.workers_backend_services.dto.Service_requestRequestDTO;
-import org.example.workers_backend_services.dto.Service_requestResponseDTO;
+import org.example.workers_backend_services.dto.ServicerequestRequestDTO;
+import org.example.workers_backend_services.dto.ServicerequestResponseDTO;
 import org.example.workers_backend_services.entity.*;
 import org.example.workers_backend_services.exception.InvalidJobStateException;
 import org.example.workers_backend_services.exception.JobAlreadyAcceptedException;
@@ -18,26 +18,26 @@ import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
-public class Service_Request_Services implements Service_Request_interface {
+public class ServiceRequestServices implements ServiceRequestinterface {
 
     @Autowired
-    private Service_Request_Repository serviceRequestRepository;
+    private ServiceRequestRepository serviceRequestRepository;
 
     @Autowired
     private UserRepository userRepository;
 
     @Autowired
-    private Worker_profileRepository workerProfileRepository;
+    private WorkerprofileRepository workerProfileRepository;
 
     @Autowired
     private CategoryRepository categoryRepository;
 
     @Autowired
-    private Worker_category_Repository workerCategoryRepository;
+    private WorkercategoryRepository workerCategoryRepository;
 
     @Override
     @Transactional
-    public Service_requestResponseDTO createJob(String customerEmail, Service_requestRequestDTO dto) {
+    public ServicerequestResponseDTO createJob(String customerEmail, ServicerequestRequestDTO dto) {
         Users customer = userRepository.findByEmail(customerEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("Customer not found: " + customerEmail));
 
@@ -79,7 +79,7 @@ public class Service_Request_Services implements Service_Request_interface {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Service_requestResponseDTO> getMyCustomerJobs(String customerEmail) {
+    public List<ServicerequestResponseDTO> getMyCustomerJobs(String customerEmail) {
         return serviceRequestRepository.findByCustomer_EmailOrderByCreatedAtDesc(customerEmail).stream()
                 .map(this::mapToDTO)
                 .collect(Collectors.toList());
@@ -87,8 +87,8 @@ public class Service_Request_Services implements Service_Request_interface {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Service_requestResponseDTO> getAvailableJobsForWorker(String workerEmail) {
-        Worker_profile worker = workerProfileRepository.findByUser_Email(workerEmail)
+    public List<ServicerequestResponseDTO> getAvailableJobsForWorker(String workerEmail) {
+        Workerprofile worker = workerProfileRepository.findByUser_Email(workerEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("Worker profile not found for: " + workerEmail));
 
         if (!worker.getIsAvailable()) {
@@ -108,8 +108,8 @@ public class Service_Request_Services implements Service_Request_interface {
 
     @Override
     @Transactional(readOnly = true)
-    public List<Service_requestResponseDTO> getMyWorkerJobs(String workerEmail) {
-        Worker_profile worker = workerProfileRepository.findByUser_Email(workerEmail)
+    public List<ServicerequestResponseDTO> getMyWorkerJobs(String workerEmail) {
+        Workerprofile worker = workerProfileRepository.findByUser_Email(workerEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("Worker profile not found for: " + workerEmail));
 
         return serviceRequestRepository.findByWorker_IdOrderByCreatedAtDesc(worker.getId()).stream()
@@ -119,7 +119,7 @@ public class Service_Request_Services implements Service_Request_interface {
 
     @Override
     @Transactional(readOnly = true)
-    public Service_requestResponseDTO getJobById(Long jobId, String userEmail) {
+    public ServicerequestResponseDTO getJobById(Long jobId, String userEmail) {
         Service_request job = serviceRequestRepository.findById(jobId)
                 .orElseThrow(() -> new ResourceNotFoundException("Job not found with ID: " + jobId));
 
@@ -133,8 +133,8 @@ public class Service_Request_Services implements Service_Request_interface {
 
     @Override
     @Transactional
-    public Service_requestResponseDTO acceptJob(Long jobId, String workerEmail) {
-        Worker_profile worker = workerProfileRepository.findByUser_Email(workerEmail)
+    public ServicerequestResponseDTO acceptJob(Long jobId, String workerEmail) {
+        Workerprofile worker = workerProfileRepository.findByUser_Email(workerEmail)
                 .orElseThrow(() -> new ResourceNotFoundException("Worker profile not found for: " + workerEmail));
 
         if (!worker.getIsAvailable()) {
@@ -167,7 +167,7 @@ public class Service_Request_Services implements Service_Request_interface {
 
     @Override
     @Transactional
-    public Service_requestResponseDTO startJob(Long jobId, String workerEmail) {
+    public ServicerequestResponseDTO startJob(Long jobId, String workerEmail) {
         Service_request job = serviceRequestRepository.findById(jobId)
                 .orElseThrow(() -> new ResourceNotFoundException("Job not found with ID: " + jobId));
 
@@ -185,7 +185,7 @@ public class Service_Request_Services implements Service_Request_interface {
 
     @Override
     @Transactional
-    public Service_requestResponseDTO completeJob(Long jobId, String workerEmail) {
+    public ServicerequestResponseDTO completeJob(Long jobId, String workerEmail) {
         Service_request job = serviceRequestRepository.findById(jobId)
                 .orElseThrow(() -> new ResourceNotFoundException("Job not found with ID: " + jobId));
 
@@ -199,7 +199,7 @@ public class Service_Request_Services implements Service_Request_interface {
 
         job.setStatus(ServiceStatus.COMPLETED);
 
-        Worker_profile worker = job.getWorker();
+        Workerprofile worker = job.getWorker();
         worker.setCompletedJobs(worker.getCompletedJobs() + 1);
         workerProfileRepository.save(worker);
 
@@ -208,7 +208,7 @@ public class Service_Request_Services implements Service_Request_interface {
 
     @Override
     @Transactional
-    public Service_requestResponseDTO cancelJob(Long jobId, String userEmail) {
+    public ServicerequestResponseDTO cancelJob(Long jobId, String userEmail) {
         Service_request job = serviceRequestRepository.findById(jobId)
                 .orElseThrow(() -> new ResourceNotFoundException("Job not found with ID: " + jobId));
 
@@ -227,7 +227,7 @@ public class Service_Request_Services implements Service_Request_interface {
         return mapToDTO(serviceRequestRepository.save(job));
     }
 
-    private Service_requestResponseDTO mapToDTO(Service_request job) {
+    private ServicerequestResponseDTO mapToDTO(Service_request job) {
         List<String> photoUrls = Collections.emptyList();
         if (job.getPhotos() != null && !job.getPhotos().isEmpty()) {
             photoUrls = job.getPhotos().stream()
@@ -236,7 +236,7 @@ public class Service_Request_Services implements Service_Request_interface {
                     .toList();
         }
 
-        return Service_requestResponseDTO.builder()
+        return ServicerequestResponseDTO.builder()
                 .requestId(job.getId() != null ? job.getId() : null)
                 .customerId(job.getCustomer() != null ? job.getCustomer().getUser_id() : null)
                 .customerName(job.getCustomer() != null ? job.getCustomer().getUser_name() : null)
