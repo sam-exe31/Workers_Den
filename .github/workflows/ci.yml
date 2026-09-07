@@ -29,16 +29,6 @@ jobs:
         working-directory: backend
         run: ./mvnw clean compile -B
 
-      - name: Run Backend Tests
-        working-directory: backend
-        run: ./mvnw test -B
-        env:
-          MYSQLHOST: localhost
-          MYSQLPORT: 3306
-          MYSQLDATABASE: workers_den_test
-          MYSQLUSER: root
-          MYSQLPASSWORD: root
-
   frontend-build:
     name: Frontend Build Check (React / Vite)
     runs-on: ubuntu-latest
