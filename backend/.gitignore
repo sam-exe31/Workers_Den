@@ -31,3 +31,20 @@ build/
 
 ### VS Code ###
 .vscode/
+
+
+### Environment secrets ###
+.env
+*.env.local
+application-local.properties
+
+### Frontend (Node/React) ###
+node_modules/
+dist/
+.vite/
+frontend/node_modules/
+frontend/dist/
+
+### OS ###
+.DS_Store
+Thumbs.db
