@@ -22,7 +22,7 @@
 ---
 
 
-## 🏗️ Tech Stack
+##  Tech Stack
  
 | Layer | Technology |
 |---|---|
@@ -36,7 +36,7 @@
  
 ---
 
-## 📂 Project Structure
+##  Project Structure
  
 ```
 Workers_Den/
@@ -72,7 +72,7 @@ Workers_Den/
 
 
  
-## 🚀 Getting Started
+##  Getting Started
  
 ### Prerequisites
 - Java 17+
@@ -117,7 +117,7 @@ Frontend runs at `http://localhost:5173` (or your configured port).
  
 ---
  
-## 🔌 API Overview
+##  API Overview
  
 | Method | Endpoint | Description |
 |---|---|---|
@@ -135,7 +135,7 @@ Frontend runs at `http://localhost:5173` (or your configured port).
  
 ---
  
-## 🗺️ Roadmap
+##  Roadmap
  
 - [ ] Add Swagger/OpenAPI docs
 - [ ] Ratings & reviews for workers
@@ -146,7 +146,7 @@ Frontend runs at `http://localhost:5173` (or your configured port).
  
 
  
-## 👤 Author
+##  Author
  
 **Samarth Ghate**
 Computer Engineering pune
