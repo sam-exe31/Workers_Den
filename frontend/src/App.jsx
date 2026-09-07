@@ -1,30 +1,30 @@
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import ProtectedRoute from './main/Component/ProtectedRoute';
-import WorkerGuard from './main/Component/WorkerGuard';
-import ErrorBoundary from './main/Component/ErrorBoundary';
+import ProtectedRoute from './components/common/ProtectedRoute';
+import WorkerGuard from './components/common/WorkerGuard';
+import ErrorBoundary from './components/common/ErrorBoundary';
 import { ThemeProvider } from './theme/ThemeContext.jsx';
-import { PALETTE} from './theme/palette.js';
+import { PALETTE } from './theme/palette.js';
 
-import Home from './main/pages/Home';
-import Login from './main/pages/Login';
-import Register from './main/pages/Register';
-import AboutUs from './main/pages/AboutUs';
+import Home from './pages/Home';
+import Login from './features/auth/Login';
+import Register from './features/auth/Register';
+import AboutUs from './pages/AboutUs';
 
-import CustomerDashboard from './main/pages/Customer/CustomerDashboard';
-import CreateJobPage from './main/pages/Customer/CreateJobPage';
-import CustomerRequestsPage from './main/pages/Customer/CustomerRequestsPage';
-import CustomerProfilePage from './main/pages/Customer/CustomerProfilePage';
+import CustomerDashboard from './features/customer/CustomerDashboard';
+import CreateJobPage from './features/customer/CreateJobPage';
+import CustomerRequestsPage from './features/customer/CustomerRequestsPage';
+import CustomerProfilePage from './features/customer/CustomerProfilePage';
 
-import WorkerSetupFlow from './main/pages/Worker/WorkerSetupFlow';
-import WorkerDashboard from './main/pages/Worker/WorkerDashboard';
-import FindJobsPage from './main/pages/Worker/FindJobsPage';
-import WorkerProfilePage from './main/pages/Worker/WorkerProfilePage';
-import WorkerMyJobsPage from './main/pages/Worker/WorkerMyJobsPage';
-import WorkerEarningsPage from './main/pages/Worker/WorkerEarningsPage';
+import WorkerSetupFlow from './features/worker/WorkerSetupFlow';
+import WorkerDashboard from './features/worker/WorkerDashboard';
+import FindJobsPage from './features/worker/FindJobsPage';
+import WorkerProfilePage from './features/worker/WorkerProfilePage';
+import WorkerMyJobsPage from './features/worker/WorkerMyJobsPage';
+import WorkerEarningsPage from './features/worker/WorkerEarningsPage';
 
-import JobDetailsPage from './main/pages/jobs/JobDetailsPage';
-import LogoutConfirmPage from './main/pages/LogoutConfirmPage';
+import JobDetailsPage from './features/jobs/JobDetailsPage';
+import LogoutConfirmPage from './features/auth/LogoutConfirmPage';
 
 function AppLayout() {
   return (
