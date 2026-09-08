@@ -1413,14 +1413,12 @@ export default function Home() {
             {/* ── bottom bar ── */}
             <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
               <div className="wd-mono text-[11px] flex flex-col items-center sm:items-start gap-1" style={{ opacity: 0.38 }}>
-                {/* First line: Copyright and Rights info */}
                 <div className="flex items-center gap-3 flex-wrap justify-center sm:justify-start">
                   <span>© 2026 Workers Den</span>
                   <span className="w-1 h-1 rounded-full" style={{ background: 'rgba(252,251,247,0.3)' }} />
                   <span>All rights reserved</span>
                 </div>
-                {/* Second line: Product info */}
-                <span className="mt-1">A Samesa Company Produlct</span>
+                <span className="mt-1">A Samesa Company Product</span>
               </div>
 
 
